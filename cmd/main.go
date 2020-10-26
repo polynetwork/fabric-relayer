@@ -24,20 +24,19 @@ import (
 	"syscall"
 
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/polynetwork/fabric_relayer/cmd"
-	"github.com/polynetwork/fabric_relayer/config"
-	"github.com/polynetwork/fabric_relayer/db"
-	"github.com/polynetwork/fabric_relayer/log"
-	"github.com/polynetwork/fabric_relayer/manager"
+	"github.com/polynetwork/fabric-relayer/config"
+	"github.com/polynetwork/fabric-relayer/db"
+	"github.com/polynetwork/fabric-relayer/log"
+	"github.com/polynetwork/fabric-relayer/manager"
 	sdk "github.com/polynetwork/poly-go-sdk"
 	"github.com/urfave/cli"
 )
 
 var (
-	ConfigPath string
-	LogDir string
-	StartHeight uint64
-	PolyStartHeight uint64
+	ConfigPath       string
+	LogDir           string
+	StartHeight      uint64
+	PolyStartHeight  uint64
 	StartForceHeight uint64
 )
 
@@ -48,12 +47,12 @@ func setupApp() *cli.App {
 	app.Version = config.Version
 	app.Copyright = "Copyright in 2019 The Ontology Authors"
 	app.Flags = []cli.Flag{
-		cmd.LogLevelFlag,
-		cmd.ConfigPathFlag,
-		cmd.EthStartFlag,
-		cmd.EthStartForceFlag,
-		cmd.PolyStartFlag,
-		cmd.LogDir,
+		logLevelFlag,
+		configPathFlag,
+		ethStartFlag,
+		ethStartForceFlag,
+		polyStartFlag,
+		logDirFlag,
 	}
 	app.Commands = []cli.Command{}
 	app.Before = func(context *cli.Context) error {
@@ -65,23 +64,23 @@ func setupApp() *cli.App {
 
 func startServer(ctx *cli.Context) {
 	// get all cmd flag
-	logLevel := ctx.GlobalInt(cmd.GetFlagName(cmd.LogLevelFlag))
+	logLevel := ctx.GlobalInt(getFlagName(logLevelFlag))
 
-	ld := ctx.GlobalString(cmd.GetFlagName(cmd.LogDir))
+	ld := ctx.GlobalString(getFlagName(logDirFlag))
 	log.InitLog(logLevel, ld, log.Stdout)
 
-	ConfigPath = ctx.GlobalString(cmd.GetFlagName(cmd.ConfigPathFlag))
-	ethstart := ctx.GlobalUint64(cmd.GetFlagName(cmd.EthStartFlag))
+	ConfigPath = ctx.GlobalString(getFlagName(configPathFlag))
+	ethstart := ctx.GlobalUint64(getFlagName(ethStartFlag))
 	if ethstart > 0 {
 		StartHeight = ethstart
 	}
 
 	StartForceHeight = 0
-	ethstartforce := ctx.GlobalUint64(cmd.GetFlagName(cmd.EthStartForceFlag))
+	ethstartforce := ctx.GlobalUint64(getFlagName(ethStartForceFlag))
 	if ethstartforce > 0 {
 		StartForceHeight = ethstartforce
 	}
-	polyStart := ctx.GlobalUint64(cmd.GetFlagName(cmd.PolyStartFlag))
+	polyStart := ctx.GlobalUint64(getFlagName(polyStartFlag))
 	if polyStart > 0 {
 		PolyStartHeight = polyStart
 	}

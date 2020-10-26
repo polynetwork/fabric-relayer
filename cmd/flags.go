@@ -14,17 +14,17 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with The poly network . If not, see <http://www.gnu.org/licenses/>.
  */
-package cmd
+package main
 
 import (
 	"strings"
 
-	"github.com/polynetwork/fabric_relayer/config"
+	"github.com/polynetwork/fabric-relayer/config"
 	"github.com/urfave/cli"
 )
 
 var (
-	LogLevelFlag = cli.UintFlag{
+	logLevelFlag = cli.UintFlag{
 		Name:  "loglevel",
 		Usage: "Set the log level to `<level>` (0~6). 0:Trace 1:Debug 2:Info 3:Warn 4:Error 5:Fatal 6:MaxLevel",
 		Value: config.DEFAULT_LOG_LEVEL,
@@ -48,31 +48,31 @@ var (
 	//	Value: config.DEFAULT_CLI_RPC_PORT,
 	//}
 
-	ConfigPathFlag = cli.StringFlag{
+	configPathFlag = cli.StringFlag{
 		Name:  "cliconfig",
 		Usage: "Server config file `<path>`",
 		Value: config.DEFAULT_CONFIG_FILE_NAME,
 	}
 
-	EthStartFlag = cli.Uint64Flag{
+	ethStartFlag = cli.Uint64Flag{
 		Name:  "ethereum",
 		Usage: "eth start block height ",
 		Value: uint64(0),
 	}
 
-	EthStartForceFlag = cli.Uint64Flag{
+	ethStartForceFlag = cli.Uint64Flag{
 		Name:  "ethereumforce",
 		Usage: "eth start block height ",
 		Value: uint64(0),
 	}
 
-	PolyStartFlag = cli.Uint64Flag{
+	polyStartFlag = cli.Uint64Flag{
 		Name:  "poly",
 		Usage: "poly start block height ",
 		Value: uint64(0),
 	}
 
-	LogDir = cli.StringFlag{
+	logDirFlag = cli.StringFlag{
 		Name:  "logdir",
 		Usage: "log directory",
 		Value: "./Log/",
@@ -85,8 +85,8 @@ var (
 	//}
 )
 
-//GetFlagName deal with short flag, and return the flag name whether flag name have short name
-func GetFlagName(flag cli.Flag) string {
+//getFlagName deal with short flag, and return the flag name whether flag name have short name
+func getFlagName(flag cli.Flag) string {
 	name := flag.GetName()
 	if name == "" {
 		return ""

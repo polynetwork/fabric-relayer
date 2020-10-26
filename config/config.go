@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/polynetwork/fabric_relayer/log"
+	"github.com/polynetwork/fabric-relayer/log"
 )
 
 const (

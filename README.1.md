@@ -11,7 +11,7 @@ Eth Relayer is an important character of Poly cross-chain interactive protocol w
 ### Build
 
 ```shell
-git clone https://github.com/polynetwork/fabric_relayer.git
+git clone https://github.com/polynetwork/fabric-relayer.git
 cd eth_relayer
 go build -o eth_relayer main.go
 ```
