@@ -19,8 +19,6 @@ package manager
 import (
 	"encoding/hex"
 	"encoding/json"
-	"time"
-	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/polynetwork/fabric-relayer/config"
 	"github.com/polynetwork/fabric-relayer/db"
 	"github.com/polynetwork/fabric-relayer/log"
@@ -30,6 +28,7 @@ import (
 	"github.com/polynetwork/poly/consensus/vbft/config"
 	polytypes "github.com/polynetwork/poly/core/types"
 	common2 "github.com/polynetwork/poly/native/service/cross_chain_manager/common"
+	"time"
 )
 
 const (
@@ -121,7 +120,6 @@ func (this *PolyManager) handleDepositEvents(height uint32) bool {
 		hp = proof.AuditPath
 	}
 
-	cnt := 0
 	events, err := this.polySdk.GetSmartContractEventByBlock(height)
 	for err != nil {
 		log.Errorf("handleDepositEvents - get block event at height:%d error: %s", height, err.Error())
@@ -150,43 +148,19 @@ func (this *PolyManager) handleDepositEvents(height uint32) bool {
 					log.Errorf("handleDepositEvents - failed to deserialize MakeTxParam (value: %x, err: %v)", value, err)
 					continue
 				}
-				var isTarget bool
-				if len(this.config.TargetContracts) > 0 {
-					toContractStr := ethcommon.BytesToAddress(param.MakeTxParam.ToContractAddress).String()
-					for _, v := range this.config.TargetContracts {
-						toChainIdArr, ok := v[toContractStr]
-						if ok {
-							if len(toChainIdArr["inbound"]) == 0 {
-								isTarget = true
-								break
-							}
-							for _, id := range toChainIdArr["inbound"] {
-								if id == param.FromChainID {
-									isTarget = true
-									break
-								}
-							}
-							if isTarget {
-								break
-							}
-						}
-					}
-					if !isTarget {
-						continue
-					}
-				}
-				cnt++
-
 				// todo
-				this.ethClient.CrossChainTransfer()
-				//sender.commitDepositEventsWithHeader(hdr, param, hp, anchor, event.TxHash, auditpath)
+				var rawAnchor []byte
+				if anchor != nil {
+					rawAnchor = anchor.ToArray()
+				}
+				rawProof, _ := hex.DecodeString(hp)
+				this.ethClient.CrossChainTransfer(auditpath, hdr.ToArray(), rawProof, rawAnchor)
 			}
 		}
 	}
-	if cnt == 0 && isEpoch && isCurr {
+	if isEpoch && isCurr {
 		// todo
-		this.ethClient.PolyHeader()
-		//sender.commitHeader(hdr)
+		this.ethClient.PolyHeader(hdr.ToArray())
 	}
 
 	return true

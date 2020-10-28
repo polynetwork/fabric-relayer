@@ -74,7 +74,7 @@ func (sdk *FabricSdk) Unregister(reg fab.Registration) {
 	sdk.eventClient.Unregister(reg)
 }
 
-func (sdk *FabricSdk) CrossChainTransfer() {
+func (sdk *FabricSdk) CrossChainTransfer(crossChainTxProof []byte, header []byte, headerProof []byte, anchor []byte) {
 	req := channel.Request{
 		ChaincodeID: "basic",
 		Fcn: "TransferAsset",
@@ -87,8 +87,17 @@ func (sdk *FabricSdk) CrossChainTransfer() {
 	fmt.Printf("response: %v\n", string(response.TransactionID))
 }
 
-func (sdk *FabricSdk) PolyHeader() {
-
+func (sdk *FabricSdk) PolyHeader(header []byte) {
+	req := channel.Request{
+		ChaincodeID: "basic",
+		Fcn: "TransferAsset",
+		Args: packArgs([]string{"asset6","Christopher"}),
+	}
+	response, err := sdk.channelClient.Execute(req, channel.WithRetry(retry.DefaultChannelOpts))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("response: %v\n", string(response.TransactionID))
 }
 
 
