@@ -18,12 +18,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/polynetwork/fabric-relayer/tools"
 	"os"
 	"os/signal"
 	"runtime"
 	"syscall"
 
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/polynetwork/fabric-relayer/config"
 	"github.com/polynetwork/fabric-relayer/db"
 	"github.com/polynetwork/fabric-relayer/log"
@@ -42,7 +42,7 @@ var (
 
 func setupApp() *cli.App {
 	app := cli.NewApp()
-	app.Usage = "ETH relayer Service"
+	app.Usage = "Fabric relayer Service"
 	app.Action = startServer
 	app.Version = config.Version
 	app.Copyright = "Copyright in 2019 The Ontology Authors"
@@ -101,9 +101,9 @@ func startServer(ctx *cli.Context) {
 	}
 
 	// create ethereum sdk
-	ethereumsdk, err := ethclient.Dial(servConfig.ETHConfig.RestURL)
+	ethereumsdk, err := tools.NewFabricSdk()
 	if err != nil {
-		log.Errorf("startServer - cannot dial sync node, err: %s", err)
+		log.Errorf("startServer - create fabric sdk, err: %s", err)
 		return
 	}
 
@@ -147,18 +147,16 @@ func waitToExit() {
 	<-exit
 }
 
-func initETHServer(servConfig *config.ServiceConfig, polysdk *sdk.PolySdk, ethereumsdk *ethclient.Client, boltDB *db.BoltDB) {
-	mgr, err := manager.NewEthereumManager(servConfig, StartHeight, StartForceHeight, polysdk, ethereumsdk, boltDB)
+func initETHServer(servConfig *config.ServiceConfig, polysdk *sdk.PolySdk, ethereumsdk *tools.FabricSdk, boltDB *db.BoltDB) {
+	mgr, err := manager.NewEthereumManager(servConfig, StartHeight, polysdk, ethereumsdk, boltDB)
 	if err != nil {
 		log.Error("initETHServer - eth service start err: %s", err.Error())
 		return
 	}
 	go mgr.MonitorChain()
-	go mgr.MonitorDeposit()
-	go mgr.CheckDeposit()
 }
 
-func initPolyServer(servConfig *config.ServiceConfig, polysdk *sdk.PolySdk, ethereumsdk *ethclient.Client, boltDB *db.BoltDB) {
+func initPolyServer(servConfig *config.ServiceConfig, polysdk *sdk.PolySdk, ethereumsdk *tools.FabricSdk, boltDB *db.BoltDB) {
 	mgr, err := manager.NewPolyManager(servConfig, uint32(PolyStartHeight), polysdk, ethereumsdk, boltDB)
 	if err != nil {
 		log.Error("initPolyServer - PolyServer service start failed: %v", err)
