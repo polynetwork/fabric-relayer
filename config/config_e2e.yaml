@@ -29,7 +29,7 @@ client:
 
   # Root of the MSP directories with keys and certs.
   cryptoconfig:
-    path: ${FABRIC_RELAYER_PATH}
+    path: ${FABRIC_RELAYER_PATH}/config
 
   # Some SDKs support pluggable KV stores, the properties under "credentialStore"
   # are implementation specific
@@ -61,9 +61,9 @@ client:
     # [Optional]. Client key and cert for TLS handshake with peers and orderers
     client:
       key:
-        path: ${FABRIC_RELAYER_PATH}/Admin@org1.example.com/tls/server.key
+        path: ${FABRIC_RELAYER_PATH}/config/Admin@org1.example.com/tls/server.key
       cert:
-        path: ${FABRIC_RELAYER_PATH}/Admin@org1.example.com/tls/server.crt
+        path: ${FABRIC_RELAYER_PATH}/config/Admin@org1.example.com/tls/server.crt
 
 #
 # [Optional]. But most apps would have this section so that channel objects can be constructed
@@ -187,13 +187,7 @@ organizations:
     peers:
       - peer0.org1.example.com
 
-  # Orderer Org name
-  ordererorg:
-    # Membership Service Provider ID for this organization
-    mspID: OrdererMSP
-
-    # Needed to load users crypto keys and certs for this org (absolute path or relative to global crypto path, DEV mode)
-    cryptoPath: ordererOrganizations/example.com/users/{username}@example.com/msp
+    cryptoPath:  config/{username}@org1.example.com/msp
 
 #
 # List of orderers to send transaction and channel create/update requests to. For the time

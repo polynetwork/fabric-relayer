@@ -34,7 +34,7 @@ const (
 	ETH_USEFUL_BLOCK_NUM     = 3
 	ETH_PROOF_USERFUL_BLOCK  = 12
 	ONT_USEFUL_BLOCK_NUM     = 1
-	DEFAULT_CONFIG_FILE_NAME = "./config.json"
+	DEFAULT_CONFIG_FILE_NAME = "./config/config.json"
 	Version                  = "1.0"
 
 	DEFAULT_LOG_LEVEL = log.InfoLog

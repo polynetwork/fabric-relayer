@@ -19,7 +19,7 @@ type FabricSdk struct {
 }
 
 func newFabSdk() *fabsdk.FabricSDK {
-	sdk, err := fabsdk.New(config.FromFile("./config_e2e.yaml"))
+	sdk, err := fabsdk.New(config.FromFile("./config/config_e2e.yaml"))
 	if err != nil {
 		panic(err)
 	}
