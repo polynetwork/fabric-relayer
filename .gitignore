@@ -2,7 +2,6 @@
 .idea/workspace.xml
 capital*
 db/bolt.bin
-config.json
 wallet.dat
 config-*debug.json
 log/20*
