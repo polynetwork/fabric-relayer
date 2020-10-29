@@ -36,7 +36,7 @@ func newResMgmt(sdk *fabsdk.FabricSDK) *resmgmt.Client {
 }
 
 func newChannelClient(sdk *fabsdk.FabricSDK) *channel.Client {
-	ccp := sdk.ChannelContext("mychannel", fabsdk.WithUser("Admin"), fabsdk.WithOrg("Org1"))
+	ccp := sdk.ChannelContext("mychannel", fabsdk.WithUser("User1"), fabsdk.WithOrg("Org1"))
 	cc, err := channel.New(ccp)
 	if err != nil {
 		panic(err)
@@ -45,7 +45,7 @@ func newChannelClient(sdk *fabsdk.FabricSDK) *channel.Client {
 }
 
 func newEventClient(sdk *fabsdk.FabricSDK) *event.Client {
-	ccp := sdk.ChannelContext("mychannel", fabsdk.WithUser("Admin"), fabsdk.WithOrg("Org1"))
+	ccp := sdk.ChannelContext("mychannel", fabsdk.WithUser("User1"), fabsdk.WithOrg("Org1"))
 	eventClient, err := event.New(ccp)
 	if err != nil {
 		panic(err)

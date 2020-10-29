@@ -56,7 +56,7 @@ client:
 
   tlsCerts:
     # [Optional]. Use system certificate pool when connecting to peers, orderers (for negotiating TLS) Default: false
-    systemCertPool: true
+    systemCertPool: false
 
     # [Optional]. Client key and cert for TLS handshake with peers and orderers
     client:
@@ -213,6 +213,9 @@ orderers:
       # allow-insecure will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
       allow-insecure: false
 
+    tlsCACerts:
+      # Certificate location absolute path
+      path: ${FABRIC_RELAYER_PATH}/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
 #
 # List of peers to send various requests to, including endorsement, query
 # and event listener registration.
@@ -234,3 +237,7 @@ peers:
       fail-fast: false
       # allow-insecure will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
       allow-insecure: false
+
+    tlsCACerts:
+      # Certificate location absolute path
+      path: ${FABRIC_RELAYER_PATH}/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
