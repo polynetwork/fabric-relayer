@@ -85,6 +85,13 @@ func startServer(ctx *cli.Context) {
 		PolyStartHeight = polyStart
 	}
 
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Errorf("startServer - get current work directory failed!")
+		return
+	}
+	os.Setenv("FABRIC_RELAYER_PATH", dir)
+
 	// read config
 	servConfig := config.NewServiceConfig(ConfigPath)
 	if servConfig == nil {
@@ -94,7 +101,7 @@ func startServer(ctx *cli.Context) {
 
 	// create poly sdk
 	polySdk := sdk.NewPolySdk()
-	err := setUpPoly(polySdk, servConfig.PolyConfig.RestURL)
+	err = setUpPoly(polySdk, servConfig.PolyConfig.RestURL)
 	if err != nil {
 		log.Errorf("startServer - failed to setup poly sdk: %v", err)
 		return
@@ -119,7 +126,7 @@ func startServer(ctx *cli.Context) {
 	}
 
 	initPolyServer(servConfig, polySdk, ethereumsdk, boltDB)
-	initETHServer(servConfig, polySdk, ethereumsdk, boltDB)
+	//initETHServer(servConfig, polySdk, ethereumsdk, boltDB)
 	waitToExit()
 }
 
@@ -148,7 +155,7 @@ func waitToExit() {
 }
 
 func initETHServer(servConfig *config.ServiceConfig, polysdk *sdk.PolySdk, ethereumsdk *tools.FabricSdk, boltDB *db.BoltDB) {
-	mgr, err := manager.NewEthereumManager(servConfig, StartHeight, polysdk, ethereumsdk, boltDB)
+	mgr, err := manager.NewEthereumManager(servConfig, polysdk, ethereumsdk, boltDB)
 	if err != nil {
 		log.Error("initETHServer - eth service start err: %s", err.Error())
 		return

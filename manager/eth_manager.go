@@ -19,8 +19,6 @@ package manager
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/polynetwork/fabric-relayer/config"
 	"github.com/polynetwork/fabric-relayer/db"
 	"github.com/polynetwork/fabric-relayer/log"
@@ -32,19 +30,14 @@ import (
 type EthereumManager struct {
 	config         *config.ServiceConfig
 	client         *tools.FabricSdk
-	currentHeight  uint64
-	lockerContract *bind.BoundContract
 	polySdk        *sdk.PolySdk
 	polySigner     *sdk.Account
 	exitChan       chan int
-	header4sync    [][]byte
-	crosstx4sync   []*CrossTransfer
 	db             *db.BoltDB
 }
 
 func NewEthereumManager(
 	servconfig *config.ServiceConfig,
-	startheight uint64,
 	ontsdk *sdk.PolySdk,
 	client *tools.FabricSdk,
 	boltDB *db.BoltDB,
@@ -88,7 +81,6 @@ func NewEthereumManager(
 	mgr = &EthereumManager{
 		config:        servconfig,
 		exitChan:      make(chan int),
-		currentHeight: startheight,
 		client:        client,
 		polySdk:       ontsdk,
 		polySigner:    signer,
@@ -107,6 +99,8 @@ func (e *EthereumManager) MonitorChain() {
 	select {
 	case ccEvent := <- notifier:
 		fmt.Printf("receive cc event:%v\n", ccEvent)
+		txHash, _ := hex.DecodeString(ccEvent.TxID)
+		e.commitCrossChainEvent(uint32(ccEvent.BlockNumber), []byte{}, []byte{}, txHash)
 	}
 }
 
@@ -117,14 +111,14 @@ func (e *EthereumManager) commitCrossChainEvent(height uint32, proof []byte, val
 		value,
 		height,
 		proof,
-		ethcommon.Hex2Bytes(e.polySigner.Address.ToHexString()),
+		e.polySigner.Address[:],
 		[]byte{},
 		e.polySigner)
 	if err != nil {
 		return "", err
 	} else {
 		log.Infof("commitProof - send transaction to poly chain: ( poly_txhash: %s, eth_txhash: %s, height: %d )",
-			tx.ToHexString(), ethcommon.BytesToHash(txhash).String(), height)
+			tx.ToHexString(), common.ToHexString(txhash), height)
 		return tx.ToHexString(), nil
 	}
 }

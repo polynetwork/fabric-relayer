@@ -62,7 +62,7 @@ func NewFabricSdk() (*FabricSdk, error) {
 }
 
 func (sdk *FabricSdk) RegisterCrossChainEvent() (fab.Registration, <-chan *fab.CCEvent, error) {
-	reg, notifier, err := sdk.eventClient.RegisterChaincodeEvent("basic", "eventID")
+	reg, notifier, err := sdk.eventClient.RegisterChaincodeEvent("ccme", "*-*")
 	if err != nil {
 		return nil, nil, err
 	} else {
@@ -76,9 +76,9 @@ func (sdk *FabricSdk) Unregister(reg fab.Registration) {
 
 func (sdk *FabricSdk) CrossChainTransfer(crossChainTxProof []byte, header []byte, headerProof []byte, anchor []byte) {
 	req := channel.Request{
-		ChaincodeID: "basic",
-		Fcn: "TransferAsset",
-		Args: packArgs([]string{"asset6","Christopher"}),
+		ChaincodeID: "ccme",
+		Fcn: "verifyHeaderAndExecuteTx",
+		Args: [][]byte{crossChainTxProof, header, headerProof, anchor},
 	}
 	response, err := sdk.channelClient.Execute(req, channel.WithRetry(retry.DefaultChannelOpts))
 	if err != nil {
@@ -89,9 +89,9 @@ func (sdk *FabricSdk) CrossChainTransfer(crossChainTxProof []byte, header []byte
 
 func (sdk *FabricSdk) PolyHeader(header []byte) {
 	req := channel.Request{
-		ChaincodeID: "basic",
-		Fcn: "TransferAsset",
-		Args: packArgs([]string{"asset6","Christopher"}),
+		ChaincodeID: "ccme",
+		Fcn: "changeBookKeeper",
+		Args: [][]byte{header},
 	}
 	response, err := sdk.channelClient.Execute(req, channel.WithRetry(retry.DefaultChannelOpts))
 	if err != nil {
