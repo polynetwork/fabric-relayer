@@ -107,7 +107,7 @@ func (e *EthereumManager) MonitorChain() {
 func (e *EthereumManager) commitCrossChainEvent(height uint32, proof []byte, value []byte, txhash []byte) (string, error) {
 	log.Debugf("commit proof, height: %d, proof: %s, value: %s, txhash: %s", height, string(proof), hex.EncodeToString(value), hex.EncodeToString(txhash))
 	tx, err := e.polySdk.Native.Ccm.ImportOuterTransfer(
-		e.config.ETHConfig.SideChainId,
+		e.config.FabricConfig.SideChainId,
 		value,
 		height,
 		proof,

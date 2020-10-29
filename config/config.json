@@ -5,19 +5,11 @@
     "WalletFile": "/data/poly_deployer/lib/poly/wallet.dat",
     "WalletPwd": "4cUYqGj2yib718E7ZmGQc"
   },
-  "ETHConfig": {
-    "RestURL": "http://0.0.0.0:8545",
-    "SideChainId": 2,
-    "ECCMContractAddress": "0x9e1FDf12D075f55642261E566e73d410A4F4395d",
-    "ECCDContractAddress": "0xBeD03e2F33030B36563BAcFFb918d941f1588DCa",
-    "KeyStorePath": "/data/poly_deployer/lib/relayer_eth",
-    "KeyStorePwdSet": {
-      "0xb7ee265d94446f465dba65002a9960d4bef9dca7": "123"
-    },
-    "BlockConfig": 12,
-    "HeadersPerBatch": 500
+  "FabricConfig": {
+    "SideChainId": 7,
+    "BlockConfig": 12
   },
-  "BoltDbPath": "/data/poly_deployer/data/eth/relayer/boltdb",
+  "BoltDbPath": "./boltdb",
   "RoutineNum": 64,
   "TargetContracts": []
 }

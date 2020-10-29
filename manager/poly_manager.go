@@ -133,7 +133,7 @@ func (this *PolyManager) handleDepositEvents(height uint32) bool {
 				if method != "makeProof" {
 					continue
 				}
-				if uint64(states[2].(float64)) != this.config.ETHConfig.SideChainId {
+				if uint64(states[2].(float64)) != this.config.FabricConfig.SideChainId {
 					continue
 				}
 				proof, err := this.polySdk.GetCrossStatesProof(hdr.Height-1, states[5].(string))

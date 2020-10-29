@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/polynetwork/fabric-relayer/log"
@@ -50,7 +49,7 @@ const (
 
 type ServiceConfig struct {
 	PolyConfig      *PolyConfig
-	ETHConfig       *ETHConfig
+	FabricConfig       *FabricConfig
 	BoltDbPath      string
 	RoutineNum      int64
 	TargetContracts []map[string]map[string][]uint64
@@ -63,19 +62,9 @@ type PolyConfig struct {
 	WalletPwd               string
 }
 
-type ETHConfig struct {
+type FabricConfig struct {
 	SideChainId         uint64
-	RestURL             string
-	ECCMContractAddress string
-	ECCDContractAddress string
-	KeyStorePath        string
-	KeyStorePwdSet      map[string]string
 	BlockConfig         uint64
-	HeadersPerBatch     int
-}
-
-type ONTConfig struct {
-	RestURL string
 }
 
 func ReadFile(fileName string) ([]byte, error) {
@@ -108,11 +97,5 @@ func NewServiceConfig(configFilePath string) *ServiceConfig {
 		log.Errorf("NewServiceConfig: failed, err: %s", err)
 		return nil
 	}
-
-	for k, v := range servConfig.ETHConfig.KeyStorePwdSet {
-		delete(servConfig.ETHConfig.KeyStorePwdSet, k)
-		servConfig.ETHConfig.KeyStorePwdSet[strings.ToLower(k)] = v
-	}
-
 	return servConfig
 }

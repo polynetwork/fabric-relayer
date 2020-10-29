@@ -236,7 +236,7 @@ peers:
       keep-alive-permit: false
       fail-fast: false
       # allow-insecure will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
-      allow-insecure: false
+      allow-insecure: true
 
     tlsCACerts:
       # Certificate location absolute path
