@@ -61,9 +61,9 @@ client:
     # [Optional]. Client key and cert for TLS handshake with peers and orderers
     client:
       key:
-        path: ${FABRIC_RELAYER_PATH}/peerOrganizations/org1.example.com/users/Admin@org1.example.com/tls/server.key
+        path: ${FABRIC_RELAYER_PATH}/peerOrganizations/org1.example.com/users/Admin@org1.example.com/tls/client.key
       cert:
-        path: ${FABRIC_RELAYER_PATH}/peerOrganizations/org1.example.com/users/Admin@org1.example.com/tls/server.crt
+        path: ${FABRIC_RELAYER_PATH}/peerOrganizations/org1.example.com/users/Admin@org1.example.com/tls/client.crt
 
 #
 # [Optional]. But most apps would have this section so that channel objects can be constructed

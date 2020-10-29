@@ -5,6 +5,7 @@ db/bolt.bin
 wallet.dat
 config-*debug.json
 log/20*
+Log
 UTC--*
 *_test.go
 config-main.json
