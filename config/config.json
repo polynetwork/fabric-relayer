@@ -2,7 +2,7 @@
   "PolyConfig": {
     "RestURL": "http://106.75.226.11:40336",
     "EntranceContractAddress": "0300000000000000000000000000000000000000",
-    "WalletFile": "/data/poly_deployer/lib/poly/wallet.dat",
+    "WalletFile": "./wallet/wallet.dat",
     "WalletPwd": "4cUYqGj2yib718E7ZmGQc"
   },
   "FabricConfig": {
