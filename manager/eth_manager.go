@@ -25,6 +25,7 @@ import (
 	"github.com/polynetwork/fabric-relayer/tools"
 	sdk "github.com/polynetwork/poly-go-sdk"
 	"github.com/polynetwork/poly/common"
+	"time"
 )
 
 type EthereumManager struct {
@@ -96,11 +97,15 @@ func (e *EthereumManager) MonitorChain() {
 	}
 	defer e.client.Unregister(reg)
 
-	select {
-	case ccEvent := <- notifier:
-		fmt.Printf("receive cc event:%v\n", ccEvent)
-		txHash, _ := hex.DecodeString(ccEvent.TxID)
-		e.commitCrossChainEvent(uint32(ccEvent.BlockNumber), []byte{}, []byte{}, txHash)
+	go e.Test()
+
+	for {
+		select {
+		case ccEvent := <-notifier:
+			fmt.Printf("receive cc event:%v\n", ccEvent)
+			txHash, _ := hex.DecodeString(ccEvent.TxID)
+			e.commitCrossChainEvent(uint32(ccEvent.BlockNumber), []byte{}, []byte{}, txHash)
+		}
 	}
 }
 
@@ -120,6 +125,13 @@ func (e *EthereumManager) commitCrossChainEvent(height uint32, proof []byte, val
 		log.Infof("commitProof - send transaction to poly chain: ( poly_txhash: %s, eth_txhash: %s, height: %d )",
 			tx.ToHexString(), common.ToHexString(txhash), height)
 		return tx.ToHexString(), nil
+	}
+}
+
+func (e *EthereumManager) Test() {
+	for true {
+		time.Sleep(time.Second * 30)
+		e.client.Lock()
 	}
 }
 

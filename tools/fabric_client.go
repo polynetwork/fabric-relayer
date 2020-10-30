@@ -1,6 +1,8 @@
 package tools
 
 import (
+	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/event"
@@ -35,18 +37,22 @@ func newResMgmt(sdk *fabsdk.FabricSDK) *resmgmt.Client {
 	return rc
 }
 
-func newChannelClient(sdk *fabsdk.FabricSDK) *channel.Client {
-	ccp := sdk.ChannelContext("mychannel", fabsdk.WithUser("User1"), fabsdk.WithOrg("Org1"))
+func newChannelClient(sdk *fabsdk.FabricSDK) (*channel.Client, *event.Client) {
+	ccp := sdk.ChannelContext("mychannel", fabsdk.WithUser("Admin"), fabsdk.WithOrg("Org1"))
 	cc, err := channel.New(ccp)
 	if err != nil {
 		panic(err)
 	}
-	return cc
+	eventClient, err := event.New(ccp, event.WithBlockEvents())
+	if err != nil {
+		panic(err)
+	}
+	return cc, eventClient
 }
 
 func newEventClient(sdk *fabsdk.FabricSDK) *event.Client {
-	ccp := sdk.ChannelContext("mychannel", fabsdk.WithUser("User1"), fabsdk.WithOrg("Org1"))
-	eventClient, err := event.New(ccp)
+	ccp := sdk.ChannelContext("mychannel", fabsdk.WithUser("Admin"), fabsdk.WithOrg("Org1"))
+	eventClient, err := event.New(ccp, event.WithBlockEvents())
 	if err != nil {
 		panic(err)
 	}
@@ -56,13 +62,12 @@ func newEventClient(sdk *fabsdk.FabricSDK) *event.Client {
 func NewFabricSdk() (*FabricSdk, error) {
 	fabricSdk := &FabricSdk{}
 	fabricSdk.sdk = newFabSdk()
-	fabricSdk.channelClient = newChannelClient(fabricSdk.sdk)
-	fabricSdk.eventClient = newEventClient(fabricSdk.sdk)
+	fabricSdk.channelClient, fabricSdk.eventClient = newChannelClient(fabricSdk.sdk)
 	return fabricSdk, nil
 }
 
 func (sdk *FabricSdk) RegisterCrossChainEvent() (fab.Registration, <-chan *fab.CCEvent, error) {
-	reg, notifier, err := sdk.eventClient.RegisterChaincodeEvent("ccme", "*-*")
+	reg, notifier, err := sdk.eventClient.RegisterChaincodeEvent("peth", "test")
 	if err != nil {
 		return nil, nil, err
 	} else {
@@ -76,10 +81,11 @@ func (sdk *FabricSdk) Unregister(reg fab.Registration) {
 
 func (sdk *FabricSdk) CrossChainTransfer(crossChainTxProof []byte, header []byte, headerProof []byte, anchor []byte) {
 	req := channel.Request{
-		ChaincodeID: "ccme",
+		ChaincodeID: "ccm1",
 		Fcn: "verifyHeaderAndExecuteTx",
-		Args: [][]byte{crossChainTxProof, header, headerProof, anchor},
+		Args: packArgs([]string{hex.EncodeToString(crossChainTxProof), hex.EncodeToString(header), hex.EncodeToString(headerProof), hex.EncodeToString(anchor)}),
 	}
+	fmt.Printf("proof: %s\nheader: %s\n", hex.EncodeToString(crossChainTxProof), hex.EncodeToString(header))
 	response, err := sdk.channelClient.Execute(req, channel.WithRetry(retry.DefaultChannelOpts))
 	if err != nil {
 		panic(err)
@@ -89,9 +95,36 @@ func (sdk *FabricSdk) CrossChainTransfer(crossChainTxProof []byte, header []byte
 
 func (sdk *FabricSdk) PolyHeader(header []byte) {
 	req := channel.Request{
-		ChaincodeID: "ccme",
+		ChaincodeID: "ccm1",
 		Fcn: "changeBookKeeper",
 		Args: [][]byte{header},
+	}
+	response, err := sdk.channelClient.Execute(req, channel.WithRetry(retry.DefaultChannelOpts))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("response: %v\n", string(response.TransactionID))
+}
+
+func (sdk *FabricSdk) GetLatestSyncHeight() uint32 {
+	req := channel.Request{
+		ChaincodeID: "ccm1",
+		Fcn: "getPolyEpochHeight",
+		Args: [][]byte{},
+	}
+	response, err := sdk.channelClient.Query(req, channel.WithRetry(retry.DefaultChannelOpts))
+	if err != nil {
+		panic(err)
+	}
+	height := binary.LittleEndian.Uint32(response.Payload)
+	return height
+}
+
+func (sdk *FabricSdk) Lock() {
+	req := channel.Request{
+		ChaincodeID: "peth",
+		Fcn: "lock",
+		Args: packArgs([]string{"2", "344cFc3B8635f72F14200aAf2168d9f75df86FD3", "1"}),
 	}
 	response, err := sdk.channelClient.Execute(req, channel.WithRetry(retry.DefaultChannelOpts))
 	if err != nil {

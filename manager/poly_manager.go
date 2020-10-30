@@ -56,11 +56,13 @@ func NewPolyManager(servCfg *config.ServiceConfig, startblockHeight uint32, poly
 }
 
 func (this *PolyManager) findLatestHeight() uint32 {
-	return uint32(0)
+	return this.ethClient.GetLatestSyncHeight()
 }
 
 func (this *PolyManager) MonitorChain() {
 	monitorTicker := time.NewTicker(config.ONT_MONITOR_INTERVAL)
+	this.currentHeight = this.findLatestHeight()
+	this.currentHeight = 186320
 	var blockHandleResult bool
 	for {
 		select {
