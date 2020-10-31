@@ -1,7 +1,11 @@
 package fabric_relayer
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric-protos-go/common"
+	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/event"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
@@ -9,6 +13,8 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
+	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/protoutil"
+	"math/big"
 	"os"
 	"testing"
 	"time"
@@ -108,7 +114,7 @@ func TestCCEvent(t *testing.T) {
 	channelClient := newChannelClient(sdk)
 	eventClient := newEventClient(sdk)
 
-	eventID := "test"
+	eventID := ".*"
 	reg, notifier, err := eventClient.RegisterChaincodeEvent("mycc", eventID)
 	if err != nil {
 		panic(err)
@@ -146,8 +152,8 @@ func TestCCEvent1(t *testing.T) {
 	channelClient := newChannelClient(sdk)
 	eventClient := newEventClient(sdk)
 
-	eventID := "test"
-	reg, notifier, err := eventClient.RegisterChaincodeEvent("peth", eventID)
+	eventID := "to.*"
+	reg, notifier, err := eventClient.RegisterChaincodeEvent("ccm1", eventID)
 	if err != nil {
 		panic(err)
 	}
@@ -156,7 +162,7 @@ func TestCCEvent1(t *testing.T) {
 	req := channel.Request{
 		ChaincodeID: "peth",
 		Fcn: "lock",
-		Args: packArgs([]string{"2", "BC8F34783742ea552C7e8823a2A9e8f58052B4D4", "10"}),
+		Args: packArgs([]string{"2", "BC8F34783742ea552C7e8823a2A9e8f58052B4D4", "11"}),
 	}
 	response, err := channelClient.Execute(req, channel.WithRetry(retry.DefaultChannelOpts))
 	if err != nil {
@@ -167,7 +173,7 @@ func TestCCEvent1(t *testing.T) {
 	select {
 	case ccEvent := <- notifier:
 		fmt.Printf("receive cc event:%v\n", ccEvent)
-	case <- time.After(time.Second * 60):
+	case <- time.After(time.Second * 600):
 		fmt.Printf("not receive cc event!")
 	}
 }
@@ -186,7 +192,37 @@ func TestTransaction(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("transaction: %s\n", string(tx.TransactionEnvelope.Payload))
+	//fmt.Printf("transaction: %s\n", string(tx.TransactionEnvelope.Payload))
+
+	pl := &common.Payload{}
+	err = proto.Unmarshal(tx.TransactionEnvelope.Payload, pl)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	txn := &peer.Transaction{}
+	err = proto.Unmarshal(pl.Data, txn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ac := &peer.TransactionAction{}
+	err = proto.Unmarshal(txn.Actions[0].Payload, ac)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	capl := &peer.ChaincodeActionPayload{}
+	err = proto.Unmarshal(ac.Payload, capl)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	hdr := &common.ChannelHeader{}
+	err = proto.Unmarshal(pl.Header.ChannelHeader, hdr)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestBlock(t *testing.T) {
@@ -199,10 +235,41 @@ func TestBlock(t *testing.T) {
 
 	sdk := newFabSdk()
 	ledgerClient := newLedger(sdk)
-	block, err := ledgerClient.QueryBlock(1)
-	if err != nil {
-		panic(err)
+	for i := uint64(20); i < 44; i++ {
+		fmt.Println(i)
+		block, err := ledgerClient.QueryBlock(i)
+		if err != nil {
+			panic(err)
+		}
+		for _, v := range block.Data.Data {
+			cas, err := protoutil.GetActionsFromEnvelope(v)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for _, e := range cas {
+				chaincodeEvent := &peer.ChaincodeEvent{}
+				err = proto.Unmarshal(e.Events, chaincodeEvent)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if chaincodeEvent.EventName == "ERC20TokenImpltransfer" {
+					te := &TransferEvent{}
+					err := json.Unmarshal(chaincodeEvent.Payload, te)
+					if err != nil {
+						t.Fatal(err)
+					}
+					fmt.Println("amount", big.NewInt(0).SetBytes(te.Amount).String())
+				}
+
+				fmt.Println(chaincodeEvent.String())
+			}
+		}
 	}
-	fmt.Printf("block: %s\n", string(block.Data.String()))
 }
 
+type TransferEvent struct {
+	From   []byte `json:"from"`
+	To     []byte `json:"to"`
+	Amount []byte `json:"amount"`
+}
