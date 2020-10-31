@@ -61,9 +61,9 @@ client:
     # [Optional]. Client key and cert for TLS handshake with peers and orderers
     client:
       key:
-        path: ${FABRIC_RELAYER_PATH}/peerOrganizations/org1.example.com/users/Admin@org1.example.com/tls/client.key
+        path: ${FABRIC_RELAYER_PATH}/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/client.key
       cert:
-        path: ${FABRIC_RELAYER_PATH}/peerOrganizations/org1.example.com/users/Admin@org1.example.com/tls/client.crt
+        path: ${FABRIC_RELAYER_PATH}/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/client.crt
 
 #
 # [Optional]. But most apps would have this section so that channel objects can be constructed
@@ -246,7 +246,7 @@ orderers:
       keep-alive-permit: false
       fail-fast: false
       # allow-insecure will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
-      allow-insecure: true
+      allow-insecure: false
 
     tlsCACerts:
       # Certificate location absolute path
@@ -271,8 +271,29 @@ peers:
       keep-alive-permit: false
       fail-fast: false
       # allow-insecure will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
-      allow-insecure: true
+      allow-insecure: false
 
     tlsCACerts:
       # Certificate location absolute path
       path: ${FABRIC_RELAYER_PATH}/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+
+  peer0.org2.example.com:
+    # this URL is used to send endorsement and query requests
+    # [Optional] Default: Infer from hostname
+    url: peer0.org2.example.com:9051
+
+    grpcOptions:
+      ssl-target-name-override: peer0.org2.example.com
+      # These parameters should be set in coordination with the keepalive policy on the server,
+      # as incompatible settings can result in closing of connection.
+      # When duration of the 'keep-alive-time' is set to 0 or less the keep alive client parameters are disabled
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      # allow-insecure will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
+      allow-insecure: false
+
+    tlsCACerts:
+      # Certificate location absolute path
+      path: ${FABRIC_RELAYER_PATH}/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem

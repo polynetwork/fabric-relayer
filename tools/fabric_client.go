@@ -67,7 +67,7 @@ func NewFabricSdk() (*FabricSdk, error) {
 }
 
 func (sdk *FabricSdk) RegisterCrossChainEvent() (fab.Registration, <-chan *fab.CCEvent, error) {
-	reg, notifier, err := sdk.eventClient.RegisterChaincodeEvent("peth", "test")
+	reg, notifier, err := sdk.eventClient.RegisterChaincodeEvent("ccm1", "test")
 	if err != nil {
 		return nil, nil, err
 	} else {

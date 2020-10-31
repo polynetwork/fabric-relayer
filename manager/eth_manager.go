@@ -97,14 +97,15 @@ func (e *EthereumManager) MonitorChain() {
 	}
 	defer e.client.Unregister(reg)
 
-	go e.Test()
+	// go e.Test()
 
 	for {
 		select {
 		case ccEvent := <-notifier:
 			fmt.Printf("receive cc event:%v\n", ccEvent)
 			txHash, _ := hex.DecodeString(ccEvent.TxID)
-			e.commitCrossChainEvent(uint32(ccEvent.BlockNumber), []byte{}, []byte{}, txHash)
+			value := ccEvent.Payload
+			e.commitCrossChainEvent(uint32(ccEvent.BlockNumber), []byte{}, value, txHash)
 		}
 	}
 }
