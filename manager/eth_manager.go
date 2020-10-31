@@ -97,7 +97,7 @@ func (e *EthereumManager) MonitorChain() {
 	}
 	defer e.client.Unregister(reg)
 
-	// go e.Test()
+	go e.Test()
 
 	for {
 		select {

@@ -67,7 +67,7 @@ func NewFabricSdk() (*FabricSdk, error) {
 }
 
 func (sdk *FabricSdk) RegisterCrossChainEvent() (fab.Registration, <-chan *fab.CCEvent, error) {
-	reg, notifier, err := sdk.eventClient.RegisterChaincodeEvent("ccm1", "test")
+	reg, notifier, err := sdk.eventClient.RegisterChaincodeEvent("ccm1", "to_ploy.*")
 	if err != nil {
 		return nil, nil, err
 	} else {
@@ -124,7 +124,7 @@ func (sdk *FabricSdk) Lock() {
 	req := channel.Request{
 		ChaincodeID: "peth",
 		Fcn: "lock",
-		Args: packArgs([]string{"2", "344cFc3B8635f72F14200aAf2168d9f75df86FD3", "1"}),
+		Args: packArgs([]string{"2", "BC8F34783742ea552C7e8823a2A9e8f58052B4D4", "10"}),
 	}
 	response, err := sdk.channelClient.Execute(req, channel.WithRetry(retry.DefaultChannelOpts))
 	if err != nil {
