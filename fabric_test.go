@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/event"
+	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
@@ -46,6 +47,15 @@ func newEventClient(sdk *fabsdk.FabricSDK) *event.Client {
 		panic(err)
 	}
 	return eventClient
+}
+
+func newLedger(sdk *fabsdk.FabricSDK) *ledger.Client {
+	ccp := sdk.ChannelContext("mychannel", fabsdk.WithUser("Admin"), fabsdk.WithOrg("Org1"))
+	ledgerClient, err := ledger.New(ccp)
+	if err != nil {
+		panic(err)
+	}
+	return ledgerClient
 }
 
 func packArgs(args []string) [][]byte {
@@ -160,5 +170,39 @@ func TestCCEvent1(t *testing.T) {
 	case <- time.After(time.Second * 60):
 		fmt.Printf("not receive cc event!")
 	}
+}
+
+func TestTransaction(t *testing.T) {
+	dir, err := os.Getwd()
+	if err != nil {
+		panic("startServer - get current work directory failed!")
+		return
+	}
+	os.Setenv("FABRIC_RELAYER_PATH", dir)
+
+	sdk := newFabSdk()
+	ledgerClient := newLedger(sdk)
+	tx, err := ledgerClient.QueryTransaction("5c69313e45b78a951a5ea01ad66de45ed11b198eeb3cd8f06bc968c0ff8e0cc9")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("transaction: %s\n", string(tx.TransactionEnvelope.Payload))
+}
+
+func TestBlock(t *testing.T) {
+	dir, err := os.Getwd()
+	if err != nil {
+		panic("startServer - get current work directory failed!")
+		return
+	}
+	os.Setenv("FABRIC_RELAYER_PATH", dir)
+
+	sdk := newFabSdk()
+	ledgerClient := newLedger(sdk)
+	block, err := ledgerClient.QueryBlock(1)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("block: %s\n", string(block.Data.String()))
 }
 
