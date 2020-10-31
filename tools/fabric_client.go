@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/event"
+	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
@@ -18,6 +19,7 @@ type FabricSdk struct {
 	sdk *fabsdk.FabricSDK
 	channelClient *channel.Client
 	eventClient *event.Client
+	ledgerClient *ledger.Client
 }
 
 func newFabSdk() *fabsdk.FabricSDK {
@@ -37,7 +39,16 @@ func newResMgmt(sdk *fabsdk.FabricSDK) *resmgmt.Client {
 	return rc
 }
 
-func newChannelClient(sdk *fabsdk.FabricSDK) (*channel.Client, *event.Client) {
+func newLedger(sdk *fabsdk.FabricSDK) *ledger.Client {
+	ccp := sdk.ChannelContext("mychannel", fabsdk.WithUser("Admin"), fabsdk.WithOrg("Org1"))
+	ledgerClient, err := ledger.New(ccp)
+	if err != nil {
+		panic(err)
+	}
+	return ledgerClient
+}
+
+func newChannelClient(sdk *fabsdk.FabricSDK) (*channel.Client, *event.Client, *ledger.Client) {
 	ccp := sdk.ChannelContext("mychannel", fabsdk.WithUser("Admin"), fabsdk.WithOrg("Org1"))
 	cc, err := channel.New(ccp)
 	if err != nil {
@@ -47,7 +58,11 @@ func newChannelClient(sdk *fabsdk.FabricSDK) (*channel.Client, *event.Client) {
 	if err != nil {
 		panic(err)
 	}
-	return cc, eventClient
+	ledgerClient, err := ledger.New(ccp)
+	if err != nil {
+		panic(err)
+	}
+	return cc, eventClient,ledgerClient
 }
 
 func newEventClient(sdk *fabsdk.FabricSDK) *event.Client {
@@ -62,7 +77,7 @@ func newEventClient(sdk *fabsdk.FabricSDK) *event.Client {
 func NewFabricSdk() (*FabricSdk, error) {
 	fabricSdk := &FabricSdk{}
 	fabricSdk.sdk = newFabSdk()
-	fabricSdk.channelClient, fabricSdk.eventClient = newChannelClient(fabricSdk.sdk)
+	fabricSdk.channelClient, fabricSdk.eventClient, fabricSdk.ledgerClient = newChannelClient(fabricSdk.sdk)
 	return fabricSdk, nil
 }
 
@@ -77,6 +92,14 @@ func (sdk *FabricSdk) RegisterCrossChainEvent() (fab.Registration, <-chan *fab.C
 
 func (sdk *FabricSdk) Unregister(reg fab.Registration) {
 	sdk.eventClient.Unregister(reg)
+}
+
+func (sdk *FabricSdk) GetLatestHeight() (uint64, error) {
+	info, err := sdk.ledgerClient.QueryInfo()
+	if err != nil {
+		return 0, err
+	}
+	return info.BCI.Height, nil
 }
 
 func (sdk *FabricSdk) CrossChainTransfer(crossChainTxProof []byte, header []byte, headerProof []byte, anchor []byte) {

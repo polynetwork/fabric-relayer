@@ -17,14 +17,20 @@
 package manager
 
 import (
+	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/polynetwork/fabric-relayer/config"
 	"github.com/polynetwork/fabric-relayer/db"
+	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/protoutil"
 	"github.com/polynetwork/fabric-relayer/log"
 	"github.com/polynetwork/fabric-relayer/tools"
 	sdk "github.com/polynetwork/poly-go-sdk"
 	"github.com/polynetwork/poly/common"
+	autils "github.com/polynetwork/poly/native/service/utils"
+	scom "github.com/polynetwork/poly/native/service/header_sync/common"
+	"math/big"
 	"time"
 )
 
@@ -35,6 +41,7 @@ type EthereumManager struct {
 	polySigner     *sdk.Account
 	exitChan       chan int
 	db             *db.BoltDB
+	currentHeight     uint64
 }
 
 func NewEthereumManager(
@@ -90,7 +97,66 @@ func NewEthereumManager(
 	return mgr, nil
 }
 
+func (this *EthereumManager) init() error {
+	// get latest height
+	latestHeight := this.findLastestHeight()
+	if latestHeight == 0 {
+		return fmt.Errorf("init - the genesis block has not synced!")
+	}
+	log.Infof("init - latest synced height: %d", latestHeight)
+	this.currentHeight = latestHeight
+	return nil
+}
+
+func (this *EthereumManager) findLastestHeight() uint64 {
+	// try to get key
+	var sideChainId uint64 = config.FABRIC_CHAIN_ID
+	var sideChainIdBytes [8]byte
+	binary.LittleEndian.PutUint64(sideChainIdBytes[:], sideChainId)
+	contractAddress := autils.HeaderSyncContractAddress
+	key := append([]byte(scom.CURRENT_HEADER_HEIGHT), sideChainIdBytes[:]...)
+	// try to get storage
+	result, err := this.polySdk.GetStorage(contractAddress.ToHexString(), key)
+	if err != nil {
+		return 0
+	}
+	if result == nil || len(result) == 0 {
+		return 0
+	} else {
+		return binary.LittleEndian.Uint64(result)
+	}
+}
+
 func (e *EthereumManager) MonitorChain() {
+	err := e.init()
+	if err != nil {
+		log.Errorf("init failed!")
+		return
+	}
+	monitorTicker := time.NewTicker(config.ETH_MONITOR_INTERVAL)
+	for {
+		select {
+		case <- monitorTicker.C:
+			height, err := e.client.GetLatestHeight()
+			if err != nil {
+				log.Infof("MonitorChain - cannot get node height, err: %s", err)
+				continue
+			}
+			log.Infof("MonitorChain - fabric height is %d", height)
+			if height - this.currentHeight <= 1 {
+				continue
+			}
+			for this.currentHeight < height - 1 {
+				blockHandleResult = this.handleNewBlock(this.currentHeight + 1)
+				if blockHandleResult == false {
+					break
+				}
+				this.currentHeight ++
+			}
+		}
+	}
+
+	/*
 	reg, notifier, err := e.client.RegisterCrossChainEvent()
 	if err != nil {
 		log.Errorf("failed to register cc event!")
@@ -108,6 +174,34 @@ func (e *EthereumManager) MonitorChain() {
 			e.commitCrossChainEvent(uint32(ccEvent.BlockNumber), []byte{}, value, txHash)
 		}
 	}
+	*/
+}
+
+func (e *EthereumManager) HandleNewBlock(height uint64) bool {
+	block, err := e.client.QueryBlock(height)
+	if err != nil {
+		return false
+	}
+	for _, v := range block.Data.Data {
+		cas, err := protoutil.GetActionsFromEnvelope(v)
+		if err != nil {
+			return false
+		}
+
+		for _, e := range cas {
+			chaincodeEvent := &peer.ChaincodeEvent{}
+			err = proto.Unmarshal(e.Events, chaincodeEvent)
+			if err != nil {
+				return false
+			}
+			if chaincodeEvent.EventName == "ERC20TokenImpltransfer" {
+				fmt.Println("amount", big.NewInt(0).SetBytes(te.Amount).String())
+				txHash, _ := hex.DecodeString(chaincodeEvent.TxId)
+				e.commitCrossChainEvent(height, []byte{}, chaincodeEvent.Payload, txHash)
+			}
+		}
+	}
+	return true
 }
 
 func (e *EthereumManager) commitCrossChainEvent(height uint32, proof []byte, value []byte, txhash []byte) (string, error) {

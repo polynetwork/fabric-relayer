@@ -225,6 +225,25 @@ func TestTransaction(t *testing.T) {
 	}
 }
 
+func TestInfo(t *testing.T) {
+	dir, err := os.Getwd()
+	if err != nil {
+		panic("startServer - get current work directory failed!")
+		return
+	}
+	os.Setenv("FABRIC_RELAYER_PATH", dir)
+
+	sdk := newFabSdk()
+	ledgerClient := newLedger(sdk)
+
+	info, err := ledgerClient.QueryInfo()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("height: %d\n", info.BCI.Height)
+}
+
+
 func TestBlock(t *testing.T) {
 	dir, err := os.Getwd()
 	if err != nil {
@@ -259,6 +278,7 @@ func TestBlock(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
+					fmt.Printf("transaction id: %s\n", chaincodeEvent.TxId)
 					fmt.Println("amount", big.NewInt(0).SetBytes(te.Amount).String())
 				}
 

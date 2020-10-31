@@ -37,6 +37,7 @@ const (
 	Version                  = "1.0"
 
 	DEFAULT_LOG_LEVEL = log.InfoLog
+	FABRIC_CHAIN_ID = 7
 )
 
 //type ETH struct {
@@ -49,7 +50,7 @@ const (
 
 type ServiceConfig struct {
 	PolyConfig      *PolyConfig
-	FabricConfig       *FabricConfig
+	FabricConfig    *FabricConfig
 	BoltDbPath      string
 	RoutineNum      int64
 	TargetContracts []map[string]map[string][]uint64
