@@ -4,6 +4,8 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/event"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
@@ -12,7 +14,9 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
+	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/protoutil"
 	"github.com/polynetwork/poly/common"
+	"strings"
 )
 
 type FabricSdk struct {
@@ -20,6 +24,11 @@ type FabricSdk struct {
 	channelClient *channel.Client
 	eventClient *event.Client
 	ledgerClient *ledger.Client
+}
+
+type CrossChainEvent struct {
+	Data  []byte
+	TxHash []byte
 }
 
 func newFabSdk() *fabsdk.FabricSDK {
@@ -100,6 +109,36 @@ func (sdk *FabricSdk) GetLatestHeight() (uint64, error) {
 		return 0, err
 	}
 	return info.BCI.Height, nil
+}
+
+func (sdk *FabricSdk) GetCrossChainEvent(height uint64) ([]*CrossChainEvent, error) {
+	block, err := sdk.ledgerClient.QueryBlock(height)
+	if err != nil {
+		return nil, err
+	}
+	events := make([]*CrossChainEvent, 0)
+	for _, v := range block.Data.Data {
+		cas, err := protoutil.GetActionsFromEnvelope(v)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, e := range cas {
+			chaincodeEvent := &peer.ChaincodeEvent{}
+			err = proto.Unmarshal(e.Events, chaincodeEvent)
+			if err != nil {
+				return nil, err
+			}
+			if strings.Contains(chaincodeEvent.EventName , "ERC20TokenImpltransfer") {
+				txHash, _ := hex.DecodeString(chaincodeEvent.TxId)
+				events = append(events, &CrossChainEvent{
+					Data: chaincodeEvent.Payload,
+					TxHash: txHash,
+				})
+			}
+		}
+	}
+	return events, nil
 }
 
 func (sdk *FabricSdk) CrossChainTransfer(crossChainTxProof []byte, header []byte, headerProof []byte, anchor []byte) {

@@ -19,18 +19,15 @@ package manager
 import (
 	"encoding/binary"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"github.com/polynetwork/fabric-relayer/config"
 	"github.com/polynetwork/fabric-relayer/db"
-	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/protoutil"
 	"github.com/polynetwork/fabric-relayer/log"
 	"github.com/polynetwork/fabric-relayer/tools"
 	sdk "github.com/polynetwork/poly-go-sdk"
 	"github.com/polynetwork/poly/common"
 	autils "github.com/polynetwork/poly/native/service/utils"
 	scom "github.com/polynetwork/poly/native/service/header_sync/common"
-	"math/big"
 	"time"
 )
 
@@ -143,15 +140,15 @@ func (e *EthereumManager) MonitorChain() {
 				continue
 			}
 			log.Infof("MonitorChain - fabric height is %d", height)
-			if height - this.currentHeight <= 1 {
+			if height - e.currentHeight <= 1 {
 				continue
 			}
-			for this.currentHeight < height - 1 {
-				blockHandleResult = this.handleNewBlock(this.currentHeight + 1)
+			for e.currentHeight < height - 1 {
+				blockHandleResult := e.HandleNewBlock(e.currentHeight + 1)
 				if blockHandleResult == false {
 					break
 				}
-				this.currentHeight ++
+				e.currentHeight ++
 			}
 		}
 	}
@@ -178,28 +175,12 @@ func (e *EthereumManager) MonitorChain() {
 }
 
 func (e *EthereumManager) HandleNewBlock(height uint64) bool {
-	block, err := e.client.QueryBlock(height)
+	events, err := e.client.GetCrossChainEvent(height)
 	if err != nil {
 		return false
 	}
-	for _, v := range block.Data.Data {
-		cas, err := protoutil.GetActionsFromEnvelope(v)
-		if err != nil {
-			return false
-		}
-
-		for _, e := range cas {
-			chaincodeEvent := &peer.ChaincodeEvent{}
-			err = proto.Unmarshal(e.Events, chaincodeEvent)
-			if err != nil {
-				return false
-			}
-			if chaincodeEvent.EventName == "ERC20TokenImpltransfer" {
-				fmt.Println("amount", big.NewInt(0).SetBytes(te.Amount).String())
-				txHash, _ := hex.DecodeString(chaincodeEvent.TxId)
-				e.commitCrossChainEvent(height, []byte{}, chaincodeEvent.Payload, txHash)
-			}
-		}
+	for _, event := range events {
+		e.commitCrossChainEvent(uint32(height), []byte{}, event.Data, event.TxHash)
 	}
 	return true
 }
