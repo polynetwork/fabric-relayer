@@ -118,7 +118,12 @@ func (sdk *FabricSdk) GetCrossChainEvent(height uint64) ([]*CrossChainEvent, err
 	}
 	events := make([]*CrossChainEvent, 0)
 	for _, v := range block.Data.Data {
-		cas, err := protoutil.GetActionsFromEnvelope(v)
+		xx , err := protoutil.GetEnvelopeFromBlock(v)
+		if err != nil {
+			return nil, err	
+		}
+		cas, err := protoutil.GetActionsFromEnvelopeMsg(xx)
+		//cas, err := protoutil.GetActionsFromEnvelope(v)
 		if err != nil {
 			return nil, err
 		}
@@ -129,7 +134,7 @@ func (sdk *FabricSdk) GetCrossChainEvent(height uint64) ([]*CrossChainEvent, err
 			if err != nil {
 				return nil, err
 			}
-			if strings.Contains(chaincodeEvent.EventName , "ERC20TokenImpltransfer") {
+			if strings.Contains(chaincodeEvent.EventName , "from_ccm") {
 				txHash, _ := hex.DecodeString(chaincodeEvent.TxId)
 				events = append(events, &CrossChainEvent{
 					Data: chaincodeEvent.Payload,

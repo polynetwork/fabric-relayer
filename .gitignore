@@ -10,3 +10,5 @@ config-main.json
 config-debug-dev.json
 build/bin
 build/wallet
+main
+nohup.out

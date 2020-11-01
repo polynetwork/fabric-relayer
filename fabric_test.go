@@ -1,7 +1,6 @@
 package fabric_relayer
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go/common"
@@ -14,7 +13,6 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/protoutil"
-	"math/big"
 	"os"
 	"testing"
 	"time"
@@ -254,14 +252,19 @@ func TestBlock(t *testing.T) {
 
 	sdk := newFabSdk()
 	ledgerClient := newLedger(sdk)
-	for i := uint64(20); i < 44; i++ {
+	for i := uint64(3); i < 50; i++ {
 		fmt.Println(i)
 		block, err := ledgerClient.QueryBlock(i)
 		if err != nil {
 			panic(err)
 		}
 		for _, v := range block.Data.Data {
-			cas, err := protoutil.GetActionsFromEnvelope(v)
+			xx, err := protoutil.GetEnvelopeFromBlock(v)
+			if err != nil {
+				t.Fatal(err)
+			}
+			//cas, err := protoutil.GetActionsFromEnvelope(v)
+			cas, err := protoutil.GetActionsFromEnvelopeMsg(xx)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -272,16 +275,6 @@ func TestBlock(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				if chaincodeEvent.EventName == "ERC20TokenImpltransfer" {
-					te := &TransferEvent{}
-					err := json.Unmarshal(chaincodeEvent.Payload, te)
-					if err != nil {
-						t.Fatal(err)
-					}
-					fmt.Printf("transaction id: %s\n", chaincodeEvent.TxId)
-					fmt.Println("amount", big.NewInt(0).SetBytes(te.Amount).String())
-				}
-
 				fmt.Println(chaincodeEvent.String())
 			}
 		}

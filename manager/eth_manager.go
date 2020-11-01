@@ -19,7 +19,6 @@ package manager
 import (
 	"encoding/binary"
 	"encoding/hex"
-	"fmt"
 	"github.com/polynetwork/fabric-relayer/config"
 	"github.com/polynetwork/fabric-relayer/db"
 	"github.com/polynetwork/fabric-relayer/log"
@@ -97,9 +96,6 @@ func NewEthereumManager(
 func (this *EthereumManager) init() error {
 	// get latest height
 	latestHeight := this.findLastestHeight()
-	if latestHeight == 0 {
-		return fmt.Errorf("init - the genesis block has not synced!")
-	}
 	log.Infof("init - latest synced height: %d", latestHeight)
 	this.currentHeight = latestHeight
 	return nil
@@ -115,10 +111,11 @@ func (this *EthereumManager) findLastestHeight() uint64 {
 	// try to get storage
 	result, err := this.polySdk.GetStorage(contractAddress.ToHexString(), key)
 	if err != nil {
-		return 0
+		log.Errorf("find latest height err: %v", err)
+		return 3
 	}
 	if result == nil || len(result) == 0 {
-		return 0
+		return 3
 	} else {
 		return binary.LittleEndian.Uint64(result)
 	}
@@ -127,7 +124,7 @@ func (this *EthereumManager) findLastestHeight() uint64 {
 func (e *EthereumManager) MonitorChain() {
 	err := e.init()
 	if err != nil {
-		log.Errorf("init failed!")
+		log.Errorf("init failed! err: %v", err)
 		return
 	}
 	monitorTicker := time.NewTicker(config.ETH_MONITOR_INTERVAL)
@@ -177,6 +174,7 @@ func (e *EthereumManager) MonitorChain() {
 func (e *EthereumManager) HandleNewBlock(height uint64) bool {
 	events, err := e.client.GetCrossChainEvent(height)
 	if err != nil {
+		log.Errorf("get cross chain event err: %v", err)
 		return false
 	}
 	for _, event := range events {
@@ -196,6 +194,7 @@ func (e *EthereumManager) commitCrossChainEvent(height uint32, proof []byte, val
 		[]byte{},
 		e.polySigner)
 	if err != nil {
+		log.Errorf("commitProof err: %v", err)
 		return "", err
 	} else {
 		log.Infof("commitProof - send transaction to poly chain: ( poly_txhash: %s, eth_txhash: %s, height: %d )",
