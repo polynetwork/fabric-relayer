@@ -7,7 +7,9 @@
   },
   "FabricConfig": {
     "SideChainId": 7,
-    "BlockConfig": 12
+    "BlockConfig": 12,
+    "Channel":"mychannel",
+    "Chaincode": "ccm1"
   },
   "BoltDbPath": "./boltdb",
   "RoutineNum": 64,

@@ -24,6 +24,8 @@ type FabricSdk struct {
 	channelClient *channel.Client
 	eventClient *event.Client
 	ledgerClient *ledger.Client
+	channel string
+	chaincode string
 }
 
 type CrossChainEvent struct {
@@ -57,8 +59,8 @@ func newLedger(sdk *fabsdk.FabricSDK) *ledger.Client {
 	return ledgerClient
 }
 
-func newChannelClient(sdk *fabsdk.FabricSDK) (*channel.Client, *event.Client, *ledger.Client) {
-	ccp := sdk.ChannelContext("mychannel", fabsdk.WithUser("Admin"), fabsdk.WithOrg("Org1"))
+func newChannelClient(sdk *fabsdk.FabricSDK, channel string, chaincode string) (*channel.Client, *event.Client, *ledger.Client) {
+	ccp := sdk.ChannelContext(channel, fabsdk.WithUser("Admin"), fabsdk.WithOrg("Org1"))
 	cc, err := channel.New(ccp)
 	if err != nil {
 		panic(err)
@@ -83,10 +85,12 @@ func newEventClient(sdk *fabsdk.FabricSDK) *event.Client {
 	return eventClient
 }
 
-func NewFabricSdk() (*FabricSdk, error) {
+func NewFabricSdk(channel string, chaincode string) (*FabricSdk, error) {
 	fabricSdk := &FabricSdk{}
+	fabricSdk.channel = channel
+	fabricSdk.chaincode = chaincode
 	fabricSdk.sdk = newFabSdk()
-	fabricSdk.channelClient, fabricSdk.eventClient, fabricSdk.ledgerClient = newChannelClient(fabricSdk.sdk)
+	fabricSdk.channelClient, fabricSdk.eventClient, fabricSdk.ledgerClient = newChannelClient(fabricSdk.sdk, channel, chaincode)
 	return fabricSdk, nil
 }
 
@@ -148,7 +152,7 @@ func (sdk *FabricSdk) GetCrossChainEvent(height uint64) ([]*CrossChainEvent, err
 
 func (sdk *FabricSdk) CrossChainTransfer(crossChainTxProof []byte, header []byte, headerProof []byte, anchor []byte) {
 	req := channel.Request{
-		ChaincodeID: "ccm1",
+		ChaincodeID: sdk.chaincode,
 		Fcn: "verifyHeaderAndExecuteTx",
 		Args: packArgs([]string{hex.EncodeToString(crossChainTxProof), hex.EncodeToString(header), hex.EncodeToString(headerProof), hex.EncodeToString(anchor)}),
 	}
@@ -162,7 +166,7 @@ func (sdk *FabricSdk) CrossChainTransfer(crossChainTxProof []byte, header []byte
 
 func (sdk *FabricSdk) PolyHeader(header []byte) {
 	req := channel.Request{
-		ChaincodeID: "ccm1",
+		ChaincodeID: sdk.chaincode,
 		Fcn: "changeBookKeeper",
 		Args: [][]byte{header},
 	}
@@ -175,7 +179,7 @@ func (sdk *FabricSdk) PolyHeader(header []byte) {
 
 func (sdk *FabricSdk) GetLatestSyncHeight() uint32 {
 	req := channel.Request{
-		ChaincodeID: "ccm1",
+		ChaincodeID: sdk.chaincode,
 		Fcn: "getPolyEpochHeight",
 		Args: [][]byte{},
 	}

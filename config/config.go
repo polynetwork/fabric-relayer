@@ -66,6 +66,8 @@ type PolyConfig struct {
 type FabricConfig struct {
 	SideChainId         uint64
 	BlockConfig         uint64
+	Channel             string
+	Chaincode           string
 }
 
 func ReadFile(fileName string) ([]byte, error) {

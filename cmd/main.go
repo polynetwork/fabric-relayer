@@ -108,7 +108,7 @@ func startServer(ctx *cli.Context) {
 	}
 
 	// create ethereum sdk
-	ethereumsdk, err := tools.NewFabricSdk()
+	ethereumsdk, err := tools.NewFabricSdk(servConfig.FabricConfig.Channel, servConfig.FabricConfig.Chaincode)
 	if err != nil {
 		log.Errorf("startServer - create fabric sdk, err: %s", err)
 		return
