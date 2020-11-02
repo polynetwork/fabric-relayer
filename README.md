@@ -9,7 +9,7 @@ go build .
 ```
 
 
-## replayer目录结构
+## relayer目录结构
 ```
 drwxr-xr-x 8 root root     4096 11月  2 10:51 .
 drwxr--r-- 2 root root     4096 11月  2 10:40 Log
