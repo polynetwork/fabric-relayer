@@ -30,46 +30,10 @@ var (
 		Value: config.DEFAULT_LOG_LEVEL,
 	}
 
-	//CliWalletDirFlag = cli.StringFlag{
-	//	Name:  "walletdir",
-	//	Usage: "Wallet data `<path>`",
-	//	Value: config.DEFAULT_WALLET_PATH,
-	//}
-
-	//CliAddressFlag = cli.StringFlag{
-	//	Name:  "cliaddress",
-	//	Usage: "Rpc bind `<address>`",
-	//	Value: config.DEFUALT_CLI_RPC_ADDRESS,
-	//}
-
-	//CliRpcPortFlag = cli.UintFlag{
-	//	Name:  "cliport",
-	//	Usage: "Rpc bind port `<number>`",
-	//	Value: config.DEFAULT_CLI_RPC_PORT,
-	//}
-
 	configPathFlag = cli.StringFlag{
 		Name:  "cliconfig",
 		Usage: "Server config file `<path>`",
 		Value: config.DEFAULT_CONFIG_FILE_NAME,
-	}
-
-	ethStartFlag = cli.Uint64Flag{
-		Name:  "ethereum",
-		Usage: "eth start block height ",
-		Value: uint64(0),
-	}
-
-	ethStartForceFlag = cli.Uint64Flag{
-		Name:  "ethereumforce",
-		Usage: "eth start block height ",
-		Value: uint64(0),
-	}
-
-	polyStartFlag = cli.Uint64Flag{
-		Name:  "poly",
-		Usage: "poly start block height ",
-		Value: uint64(0),
 	}
 
 	logDirFlag = cli.StringFlag{
@@ -77,12 +41,6 @@ var (
 		Usage: "log directory",
 		Value: "./Log/",
 	}
-
-	//EncryptFlag = cli.StringFlag{
-	//	Name:  "encrypt",
-	//	Usage: "encrypt string `pwd`",
-	//	Value: "",
-	//}
 )
 
 //getFlagName deal with short flag, and return the flag name whether flag name have short name

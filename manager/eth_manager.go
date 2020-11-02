@@ -30,7 +30,7 @@ import (
 	"time"
 )
 
-type EthereumManager struct {
+type FabricManager struct {
 	config         *config.ServiceConfig
 	client         *tools.FabricSdk
 	polySdk        *sdk.PolySdk
@@ -40,12 +40,12 @@ type EthereumManager struct {
 	currentHeight     uint64
 }
 
-func NewEthereumManager(
+func NewFabricManager(
 	servconfig *config.ServiceConfig,
 	ontsdk *sdk.PolySdk,
 	client *tools.FabricSdk,
 	boltDB *db.BoltDB,
-) (mgr *EthereumManager, err error) {
+) (mgr *FabricManager, err error) {
 
 	var (
 		wallet *sdk.Wallet
@@ -62,7 +62,7 @@ func NewEthereumManager(
 		wallet, err = ontsdk.OpenWallet(wf)
 	}
 	if err != nil {
-		log.Errorf("NewETHManager - wallet open error: %s", err.Error())
+		log.Errorf("NewFabricManager - open poly wallet error: %s", err.Error())
 		return
 	}
 
@@ -71,7 +71,7 @@ func NewEthereumManager(
 		signer, err = wallet.NewDefaultSettingAccount(pwd)
 	}
 	if err != nil {
-		log.Errorf("NewETHManager - wallet password error")
+		log.Errorf("NewFabricManager - poly wallet password error")
 		return nil, err
 	}
 
@@ -80,9 +80,9 @@ func NewEthereumManager(
 		return
 	}
 
-	log.Infof("NewETHManager - poly address: %s", signer.Address.ToBase58())
+	log.Infof("NewFabricManager - poly user address: %s", signer.Address.ToBase58())
 
-	mgr = &EthereumManager{
+	mgr = &FabricManager{
 		config:        servconfig,
 		exitChan:      make(chan int),
 		client:        client,
@@ -93,7 +93,7 @@ func NewEthereumManager(
 	return mgr, nil
 }
 
-func (this *EthereumManager) init() error {
+func (this *FabricManager) init() error {
 	// get latest height
 	latestHeight := this.findLastestHeight()
 	log.Infof("init - latest synced height: %d", latestHeight)
@@ -101,7 +101,7 @@ func (this *EthereumManager) init() error {
 	return nil
 }
 
-func (this *EthereumManager) findLastestHeight() uint64 {
+func (this *FabricManager) findLastestHeight() uint64 {
 	// try to get key
 	var sideChainId uint64 = config.FABRIC_CHAIN_ID
 	var sideChainIdBytes [8]byte
@@ -121,13 +121,13 @@ func (this *EthereumManager) findLastestHeight() uint64 {
 	}
 }
 
-func (e *EthereumManager) MonitorChain() {
+func (e *FabricManager) MonitorChain() {
 	err := e.init()
 	if err != nil {
 		log.Errorf("init failed! err: %v", err)
 		return
 	}
-	monitorTicker := time.NewTicker(config.ETH_MONITOR_INTERVAL)
+	monitorTicker := time.NewTicker(config.FABRIC_MONITOR_INTERVAL)
 	for {
 		select {
 		case <- monitorTicker.C:
@@ -137,10 +137,10 @@ func (e *EthereumManager) MonitorChain() {
 				continue
 			}
 			log.Infof("MonitorChain - fabric height is %d", height)
-			if height - e.currentHeight <= 1 {
+			if height - e.currentHeight <= config.FABRIC_USEFUL_BLOCK_NUM {
 				continue
 			}
-			for e.currentHeight < height - 1 {
+			for e.currentHeight < height - config.FABRIC_USEFUL_BLOCK_NUM {
 				blockHandleResult := e.HandleNewBlock(e.currentHeight + 1)
 				if blockHandleResult == false {
 					break
@@ -171,7 +171,7 @@ func (e *EthereumManager) MonitorChain() {
 	*/
 }
 
-func (e *EthereumManager) HandleNewBlock(height uint64) bool {
+func (e *FabricManager) HandleNewBlock(height uint64) bool {
 	events, err := e.client.GetCrossChainEvent(height)
 	if err != nil {
 		log.Errorf("get cross chain event err: %v", err)
@@ -183,7 +183,7 @@ func (e *EthereumManager) HandleNewBlock(height uint64) bool {
 	return true
 }
 
-func (e *EthereumManager) commitCrossChainEvent(height uint32, proof []byte, value []byte, txhash []byte) (string, error) {
+func (e *FabricManager) commitCrossChainEvent(height uint32, proof []byte, value []byte, txhash []byte) (string, error) {
 	log.Debugf("commit proof, height: %d, proof: %s, value: %s, txhash: %s", height, string(proof), hex.EncodeToString(value), hex.EncodeToString(txhash))
 	tx, err := e.polySdk.Native.Ccm.ImportOuterTransfer(
 		e.config.FabricConfig.SideChainId,
@@ -197,13 +197,13 @@ func (e *EthereumManager) commitCrossChainEvent(height uint32, proof []byte, val
 		log.Errorf("commitProof err: %v", err)
 		return "", err
 	} else {
-		log.Infof("commitProof - send transaction to poly chain: ( poly_txhash: %s, eth_txhash: %s, height: %d )",
+		log.Infof("commitProof - send transaction to poly chain: ( poly_txhash: %s, fabric_txhash: %s, height: %d )",
 			tx.ToHexString(), common.ToHexString(txhash), height)
 		return tx.ToHexString(), nil
 	}
 }
 
-func (e *EthereumManager) Test() {
+func (e *FabricManager) Test() {
 	for true {
 		time.Sleep(time.Second * 30)
 		e.client.Lock()

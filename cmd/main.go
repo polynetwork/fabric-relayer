@@ -35,9 +35,6 @@ import (
 var (
 	ConfigPath       string
 	LogDir           string
-	StartHeight      uint64
-	PolyStartHeight  uint64
-	StartForceHeight uint64
 )
 
 func setupApp() *cli.App {
@@ -49,9 +46,6 @@ func setupApp() *cli.App {
 	app.Flags = []cli.Flag{
 		logLevelFlag,
 		configPathFlag,
-		ethStartFlag,
-		ethStartForceFlag,
-		polyStartFlag,
 		logDirFlag,
 	}
 	app.Commands = []cli.Command{}
@@ -65,25 +59,9 @@ func setupApp() *cli.App {
 func startServer(ctx *cli.Context) {
 	// get all cmd flag
 	logLevel := ctx.GlobalInt(getFlagName(logLevelFlag))
-
 	ld := ctx.GlobalString(getFlagName(logDirFlag))
 	log.InitLog(logLevel, ld, log.Stdout)
-
 	ConfigPath = ctx.GlobalString(getFlagName(configPathFlag))
-	ethstart := ctx.GlobalUint64(getFlagName(ethStartFlag))
-	if ethstart > 0 {
-		StartHeight = ethstart
-	}
-
-	StartForceHeight = 0
-	ethstartforce := ctx.GlobalUint64(getFlagName(ethStartForceFlag))
-	if ethstartforce > 0 {
-		StartForceHeight = ethstartforce
-	}
-	polyStart := ctx.GlobalUint64(getFlagName(polyStartFlag))
-	if polyStart > 0 {
-		PolyStartHeight = polyStart
-	}
 
 	dir, err := os.Getwd()
 	if err != nil {
@@ -95,7 +73,7 @@ func startServer(ctx *cli.Context) {
 	// read config
 	servConfig := config.NewServiceConfig(ConfigPath)
 	if servConfig == nil {
-		log.Errorf("startServer - create config failed!")
+		log.Errorf("startServer - read config failed!")
 		return
 	}
 
@@ -108,7 +86,7 @@ func startServer(ctx *cli.Context) {
 	}
 
 	// create ethereum sdk
-	ethereumsdk, err := tools.NewFabricSdk(servConfig.FabricConfig.Channel, servConfig.FabricConfig.Chaincode)
+	fabricSdk, err := tools.NewFabricSdk(servConfig.FabricConfig.Channel, servConfig.FabricConfig.Chaincode)
 	if err != nil {
 		log.Errorf("startServer - create fabric sdk, err: %s", err)
 		return
@@ -125,8 +103,8 @@ func startServer(ctx *cli.Context) {
 		return
 	}
 
-	initPolyServer(servConfig, polySdk, ethereumsdk, boltDB)
-	initETHServer(servConfig, polySdk, ethereumsdk, boltDB)
+	initPolyServer(servConfig, polySdk, fabricSdk, boltDB)
+	initFabricServer(servConfig, polySdk, fabricSdk, boltDB)
 	waitToExit()
 }
 
@@ -146,7 +124,7 @@ func waitToExit() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go func() {
 		for sig := range sc {
-			log.Infof("waitToExit - ETH relayer received exit signal:%v.", sig.String())
+			log.Infof("waitToExit - Fabric relayer received exit signal:%v.", sig.String())
 			close(exit)
 			break
 		}
@@ -154,26 +132,26 @@ func waitToExit() {
 	<-exit
 }
 
-func initETHServer(servConfig *config.ServiceConfig, polysdk *sdk.PolySdk, ethereumsdk *tools.FabricSdk, boltDB *db.BoltDB) {
-	mgr, err := manager.NewEthereumManager(servConfig, polysdk, ethereumsdk, boltDB)
+func initFabricServer(servConfig *config.ServiceConfig, polysdk *sdk.PolySdk, fabricsdk *tools.FabricSdk, boltDB *db.BoltDB) {
+	mgr, err := manager.NewFabricManager(servConfig, polysdk, fabricsdk, boltDB)
 	if err != nil {
-		log.Error("initETHServer - eth service start err: %s", err.Error())
+		log.Error("initFabricServer - fabric service start err: %s", err.Error())
 		return
 	}
 	go mgr.MonitorChain()
 }
 
-func initPolyServer(servConfig *config.ServiceConfig, polysdk *sdk.PolySdk, ethereumsdk *tools.FabricSdk, boltDB *db.BoltDB) {
-	mgr, err := manager.NewPolyManager(servConfig, uint32(PolyStartHeight), polysdk, ethereumsdk, boltDB)
+func initPolyServer(servConfig *config.ServiceConfig, polysdk *sdk.PolySdk, fabricsdk *tools.FabricSdk, boltDB *db.BoltDB) {
+	mgr, err := manager.NewPolyManager(servConfig, polysdk, fabricsdk, boltDB)
 	if err != nil {
-		log.Error("initPolyServer - PolyServer service start failed: %v", err)
+		log.Error("initPolyServer - poly service start failed: %v", err)
 		return
 	}
 	go mgr.MonitorChain()
 }
 
 func main() {
-	log.Infof("main - ETH relayer starting...")
+	log.Infof("main - Fabric relayer starting...")
 	if err := setupApp().Run(os.Args); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

@@ -31,37 +31,28 @@ import (
 	"time"
 )
 
-const (
-	ChanLen = 64
-)
-
 type PolyManager struct {
-	config        *config.ServiceConfig
+	config         *config.ServiceConfig
 	polySdk       *sdk.PolySdk
 	currentHeight uint32
 	exitChan      chan int
 	db            *db.BoltDB
-	ethClient     *tools.FabricSdk
+	fabricClient     *tools.FabricSdk
 }
 
-func NewPolyManager(servCfg *config.ServiceConfig, startblockHeight uint32, polySdk *sdk.PolySdk, ethereumsdk *tools.FabricSdk, boltDB *db.BoltDB) (*PolyManager, error) {
+func NewPolyManager(servCfg *config.ServiceConfig, polySdk *sdk.PolySdk, fabricsdk *tools.FabricSdk, boltDB *db.BoltDB) (*PolyManager, error) {
 	return &PolyManager{
 		exitChan:      make(chan int),
 		config:        servCfg,
 		polySdk:       polySdk,
-		currentHeight: startblockHeight,
 		db:            boltDB,
-		ethClient:     ethereumsdk,
+		fabricClient:     fabricsdk,
 	}, nil
 }
 
-func (this *PolyManager) findLatestHeight() uint32 {
-	return this.ethClient.GetLatestSyncHeight()
-}
-
 func (this *PolyManager) MonitorChain() {
-	monitorTicker := time.NewTicker(config.ONT_MONITOR_INTERVAL)
-	this.currentHeight = this.findLatestHeight()
+	monitorTicker := time.NewTicker(config.POLY_MONITOR_INTERVAL)
+	this.currentHeight = this.fabricClient.GetLatestSyncHeight()
 	var blockHandleResult bool
 	for {
 		select {
@@ -72,12 +63,12 @@ func (this *PolyManager) MonitorChain() {
 				continue
 			}
 			latestheight--
-			if latestheight-this.currentHeight < config.ONT_USEFUL_BLOCK_NUM {
+			if latestheight-this.currentHeight < config.POLY_USEFUL_BLOCK_NUM {
 				continue
 			}
 			log.Infof("MonitorChain - poly chain current height: %d", latestheight)
 			blockHandleResult = true
-			for this.currentHeight <= latestheight-config.ONT_USEFUL_BLOCK_NUM {
+			for this.currentHeight <= latestheight-config.POLY_USEFUL_BLOCK_NUM {
 				blockHandleResult = this.handleDepositEvents(this.currentHeight)
 				if blockHandleResult == false {
 					break
@@ -94,7 +85,7 @@ func (this *PolyManager) MonitorChain() {
 }
 
 func (this *PolyManager) handleDepositEvents(height uint32) bool {
-	lastEpoch := this.findLatestHeight()
+	lastEpoch := this.fabricClient.GetLatestSyncHeight()
 	hdr, err := this.polySdk.GetHeaderByHeight(height + 1)
 	if err != nil {
 		log.Errorf("handleBlockHeader - GetNodeHeader on height :%d failed", height)
@@ -149,19 +140,19 @@ func (this *PolyManager) handleDepositEvents(height uint32) bool {
 					log.Errorf("handleDepositEvents - failed to deserialize MakeTxParam (value: %x, err: %v)", value, err)
 					continue
 				}
-				// todo
+				//
 				var rawAnchor []byte
 				if anchor != nil {
 					rawAnchor = anchor.ToArray()
 				}
 				rawProof, _ := hex.DecodeString(hp)
-				this.ethClient.CrossChainTransfer(auditpath, hdr.ToArray(), rawProof, rawAnchor)
+				this.fabricClient.CrossChainTransfer(auditpath, hdr.ToArray(), rawProof, rawAnchor)
 			}
 		}
 	}
 	if isEpoch && isCurr {
-		// todo
-		this.ethClient.PolyHeader(hdr.ToArray())
+		//
+		this.fabricClient.PolyHeader(hdr.ToArray())
 	}
 
 	return true

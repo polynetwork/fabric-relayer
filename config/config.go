@@ -27,26 +27,17 @@ import (
 )
 
 const (
-	ETH_MONITOR_INTERVAL = time.Second
-	ONT_MONITOR_INTERVAL = time.Second
+	FABRIC_MONITOR_INTERVAL = time.Second
+	POLY_MONITOR_INTERVAL = time.Second
 
-	ETH_USEFUL_BLOCK_NUM     = 3
-	ETH_PROOF_USERFUL_BLOCK  = 12
-	ONT_USEFUL_BLOCK_NUM     = 1
+	FABRIC_USEFUL_BLOCK_NUM     = 1
+	POLY_USEFUL_BLOCK_NUM     = 1
 	DEFAULT_CONFIG_FILE_NAME = "./config/config.json"
 	Version                  = "1.0"
 
 	DEFAULT_LOG_LEVEL = log.InfoLog
 	FABRIC_CHAIN_ID = 7
 )
-
-//type ETH struct {
-//	Chain             string // eth or etc
-//	ChainId           uint64
-//	RpcAddress        string
-//	ConfirmedBlockNum uint
-//	//Tokens            []*Token
-//}
 
 type ServiceConfig struct {
 	PolyConfig      *PolyConfig
