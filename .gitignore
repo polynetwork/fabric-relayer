@@ -1,7 +1,7 @@
 .idea/
 .idea/workspace.xml
 capital*
-db/bolt.bin
+boltdb/bolt.bin
 config-*debug.json
 log/20*
 Log

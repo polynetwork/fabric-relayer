@@ -11,5 +11,5 @@
     "Channel":"mychannel",
     "Chaincode": "ccm1"
   },
-  "BoltDbPath": "./boltdb",
+  "BoltDbPath": "./boltdb"
 }
