@@ -136,10 +136,10 @@ func (e *FabricManager) MonitorChain() {
 				log.Infof("MonitorChain - cannot get node height, err: %s", err)
 				continue
 			}
-			log.Infof("MonitorChain - fabric height is %d", height)
 			if height - e.currentHeight <= config.FABRIC_USEFUL_BLOCK_NUM {
 				continue
 			}
+			log.Infof("MonitorChain - fabric height is %d", height)
 			for e.currentHeight < height - config.FABRIC_USEFUL_BLOCK_NUM {
 				blockHandleResult := e.HandleNewBlock(e.currentHeight + 1)
 				if blockHandleResult == false {
