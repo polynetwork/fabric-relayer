@@ -52,8 +52,6 @@ type ServiceConfig struct {
 	PolyConfig      *PolyConfig
 	FabricConfig    *FabricConfig
 	BoltDbPath      string
-	RoutineNum      int64
-	TargetContracts []map[string]map[string][]uint64
 }
 
 type PolyConfig struct {

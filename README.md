@@ -1,10 +1,40 @@
 # fabric-relayer
 
+## replayer目录结构
+`
+drwxr-xr-x 8 root root     4096 11月  2 10:51 .
+
+drwxr--r-- 2 root root     4096 11月  2 10:40 Log
+
+-rwxr-xr-x 1 root root 39631216 11月  2 10:40 main
+
+drwxr-xr-x 2 root root     4096 11月  2 10:40 wallet
+
+drwxr-xr-x 4 root root     4096 11月  2 10:40 peerOrganizations
+
+drwxr-xr-x 3 root root     4096 11月  2 10:40 ordererOrganizations
+
+drwxr-xr-x 2 root root     4096 11月  2 10:40 boltdb
+
+drwxr-xr-x 2 root root     4096 11月  2 10:40 config
+
+-rw-r--r-- 1 root root       16 11月  2 10:40 README.md
+
+drwxr-xr-x 4 root root     4096 11月  2 10:40 ..
+`
++ Log: relayer日志输出目录
++ main： realyer应用程序
++ wallet: poly的钱包文件
++ peerOrganizations&ordererOrganizations: peer节点和order节点证书
++ boltdb: 本地数据库，不需要额外安装数据库服务
++ config: relayer的全局配置
++ README.md: relayer的介绍和使用说明
+
 ## 配置
 
-配置包括三部分，relayer基本环境配置、fabric环境配置、fabric账户配置
+配置包括三部分，relayer全局配置、fabric环境配置、fabric账户配置
 
-### relayer基本环境配置
+### relayer全局配置
 
 配置在文件config/config.json
 
@@ -18,31 +48,33 @@
   },
   "FabricConfig": {
     "SideChainId": 7,
-    "BlockConfig": 12,
+    "BlockConfig": 1,
     "Channel":"mychannel",
     "Chaincode": "ccm1"
   },
   "BoltDbPath": "./boltdb",
-  "RoutineNum": 64,
-  "TargetContracts": []
 }
 `
-relayer基本环境配置包括两个部分：
+relayer全局配置包括三部分：
 
 1、配置poly链的信息
 
-包括poly节点url、poly的钱包文件信息。
++ RestURL: poly节点url
++ WalletFile&WalletPwd: poly的钱包文件
 
 2、fabric链信息
 
 + Channel: 跨链管理合约部署的channel
 + Chaincode: 跨链管理合约的链码ID
 
+3、bolt数据库
++ BoltDbPath: bolt数据库文件存放路径
+
 ### fabric环境配置
 
 配置在文件config/config_e2e.yaml
 
-relayer启动后会将环境变量FABRIC_RELAYER_PATH设置为当前目录，需要根据fabric的环境配置以下：
+relayer启动后会将环境变量FABRIC_RELAYER_PATH设置为当前目录，需要用户根据自己的fabric环境进行以下配置：
 
 1、relayer连接fabric的TLS连接配置
 `
@@ -137,4 +169,11 @@ orderers:
     tlsCACerts:
       # Certificate location absolute path
       path: ${FABRIC_RELAYER_PATH}/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
+`
+
+
+## 启动relayer
+
+`
+nohup ./main &
 `
