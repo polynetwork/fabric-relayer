@@ -8,19 +8,11 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/protoutil"
-	"os"
 	"testing"
 	"time"
 )
 
 func TestCCQuery(t *testing.T) {
-	dir, err := os.Getwd()
-	if err != nil {
-		panic("startServer - get current work directory failed!")
-		return
-	}
-	os.Setenv("FABRIC_RELAYER_PATH", dir)
-
 	sdk := newFabSdk()
 	channelClient := newChannelClient(sdk, "mychannel")
 	req := channel.Request{
@@ -36,13 +28,6 @@ func TestCCQuery(t *testing.T) {
 }
 
 func TestCCInvoke(t *testing.T) {
-	dir, err := os.Getwd()
-	if err != nil {
-		panic("startServer - get current work directory failed!")
-		return
-	}
-	os.Setenv("FABRIC_RELAYER_PATH", dir)
-
 	sdk := newFabSdk()
 	channelClient := newChannelClient(sdk, "mychannel")
 	req := channel.Request{
@@ -58,13 +43,6 @@ func TestCCInvoke(t *testing.T) {
 }
 
 func TestCCEvent(t *testing.T) {
-	dir, err := os.Getwd()
-	if err != nil {
-		panic("startServer - get current work directory failed!")
-		return
-	}
-	os.Setenv("FABRIC_RELAYER_PATH", dir)
-
 	sdk := newFabSdk()
 	channelClient := newChannelClient(sdk, "mychannel")
 	eventClient := newEventClient(sdk, "mychannel")
@@ -96,13 +74,6 @@ func TestCCEvent(t *testing.T) {
 }
 
 func TestQueryTransaction(t *testing.T) {
-	dir, err := os.Getwd()
-	if err != nil {
-		panic("startServer - get current work directory failed!")
-		return
-	}
-	os.Setenv("FABRIC_RELAYER_PATH", dir)
-
 	sdk := newFabSdk()
 	ledgerClient := newLedgerClient(sdk, "mychannel")
 	tx, err := ledgerClient.QueryTransaction("5c69313e45b78a951a5ea01ad66de45ed11b198eeb3cd8f06bc968c0ff8e0cc9")
@@ -143,13 +114,6 @@ func TestQueryTransaction(t *testing.T) {
 }
 
 func TestQueryInfo(t *testing.T) {
-	dir, err := os.Getwd()
-	if err != nil {
-		panic("startServer - get current work directory failed!")
-		return
-	}
-	os.Setenv("FABRIC_RELAYER_PATH", dir)
-
 	sdk := newFabSdk()
 	ledgerClient := newLedgerClient(sdk, "mychannel")
 
@@ -162,13 +126,6 @@ func TestQueryInfo(t *testing.T) {
 
 
 func TestQueryBlock(t *testing.T) {
-	dir, err := os.Getwd()
-	if err != nil {
-		panic("startServer - get current work directory failed!")
-		return
-	}
-	os.Setenv("FABRIC_RELAYER_PATH", dir)
-
 	sdk := newFabSdk()
 	ledgerClient := newLedgerClient(sdk, "mychannel")
 	for i := uint64(3); i < 50; i++ {

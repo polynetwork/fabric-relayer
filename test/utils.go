@@ -7,9 +7,16 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
+	"os"
 )
 
 func newFabSdk() *fabsdk.FabricSDK {
+	dir, err := os.Getwd()
+	if err != nil {
+		panic("get current work directory failed!")
+	}
+	os.Setenv("FABRIC_RELAYER_PATH", dir + "/..")
+
 	sdk, err := fabsdk.New(config.FromFile("./../config/config_e2e.yaml"))
 	if err != nil {
 		panic(err)

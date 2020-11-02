@@ -9,22 +9,14 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/protoutil"
-	common2 "github.com/polynetwork/poly/native/service/cross_chain_manager/common"
 	poly_common "github.com/polynetwork/poly/common"
-	"os"
+	common2 "github.com/polynetwork/poly/native/service/cross_chain_manager/common"
 	"strings"
 	"testing"
 	"time"
 )
 
 func TestCrossChainEvent(t *testing.T) {
-	dir, err := os.Getwd()
-	if err != nil {
-		panic("startServer - get current work directory failed!")
-		return
-	}
-	os.Setenv("FABRIC_RELAYER_PATH", dir)
-
 	sdk := newFabSdk()
 	channelClient := newChannelClient(sdk, "mychannel")
 	eventClient := newEventClient(sdk, "mychannel")
@@ -56,13 +48,6 @@ func TestCrossChainEvent(t *testing.T) {
 }
 
 func TestCrossChainSyncHeight(t *testing.T) {
-	dir, err := os.Getwd()
-	if err != nil {
-		panic("startServer - get current work directory failed!")
-		return
-	}
-	os.Setenv("FABRIC_RELAYER_PATH", dir)
-
 	sdk := newFabSdk()
 	channelClient := newChannelClient(sdk, "mychannel")
 	req := channel.Request{
@@ -80,13 +65,6 @@ func TestCrossChainSyncHeight(t *testing.T) {
 
 
 func TestBlockEvent(t *testing.T) {
-	dir, err := os.Getwd()
-	if err != nil {
-		panic("startServer - get current work directory failed!")
-		return
-	}
-	os.Setenv("FABRIC_RELAYER_PATH", dir)
-
 	sdk := newFabSdk()
 	ledgerClient := newLedgerClient(sdk, "mychannel")
 	for i := uint64(3); i < 50; i++ {
