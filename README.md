@@ -3,32 +3,26 @@
 ## 编译
 
 进入cmd目录，编译
-`
+
+```
 go build .
-`
+```
+
 
 ## replayer目录结构
-`
+```
 drwxr-xr-x 8 root root     4096 11月  2 10:51 .
-
 drwxr--r-- 2 root root     4096 11月  2 10:40 Log
-
 -rwxr-xr-x 1 root root 39631216 11月  2 10:40 main
-
 drwxr-xr-x 2 root root     4096 11月  2 10:40 wallet
-
 drwxr-xr-x 4 root root     4096 11月  2 10:40 peerOrganizations
-
 drwxr-xr-x 3 root root     4096 11月  2 10:40 ordererOrganizations
-
 drwxr-xr-x 2 root root     4096 11月  2 10:40 boltdb
-
 drwxr-xr-x 2 root root     4096 11月  2 10:40 config
-
 -rw-r--r-- 1 root root       16 11月  2 10:40 README.md
-
 drwxr-xr-x 4 root root     4096 11月  2 10:40 ..
-`
+```
+
 + Log: relayer日志输出目录
 + main： realyer应用程序
 + wallet: poly的钱包文件
@@ -45,7 +39,7 @@ drwxr-xr-x 4 root root     4096 11月  2 10:40 ..
 
 配置在文件config/config.json
 
-`
+```
 {
   "PolyConfig": {
     "RestURL": "http://106.75.226.11:40336",
@@ -61,7 +55,8 @@ drwxr-xr-x 4 root root     4096 11月  2 10:40 ..
   },
   "BoltDbPath": "./boltdb",
 }
-`
+```
+
 relayer全局配置包括三部分：
 
 1、配置poly链的信息
@@ -84,17 +79,17 @@ relayer全局配置包括三部分：
 relayer启动后会将环境变量FABRIC_RELAYER_PATH设置为当前目录，需要用户根据自己的fabric环境进行以下配置：
 
 1、relayer连接fabric的TLS连接配置
-`
+```
     client:
       key:
         path: ${FABRIC_RELAYER_PATH}/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/client.key
       cert:
         path: ${FABRIC_RELAYER_PATH}/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/client.crt
-`
+```
 
 2、fabric的peer信息
 
-`
+```
 peers:
   peer0.org1.example.com:
     # this URL is used to send endorsement and query requests
@@ -137,11 +132,11 @@ peers:
     tlsCACerts:
       # Certificate location absolute path
       path: ${FABRIC_RELAYER_PATH}/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem
-`
+```
 
 3、fabric的组织信息
 
-`
+```
 organizations:
   Org1:
     mspid: Org1MSP
@@ -150,10 +145,10 @@ organizations:
 
     cryptoPath:  peerOrganizations/org1.example.com/users/{username}@org1.example.com/msp
 
-`
+```
 
 4、fabric的order节点信息
-`
+```
 orderers:
   orderer.example.com:
     # [Optional] Default: Infer from hostname
@@ -176,11 +171,11 @@ orderers:
     tlsCACerts:
       # Certificate location absolute path
       path: ${FABRIC_RELAYER_PATH}/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
-`
+```
 
 
 ## 启动relayer
 
-`
+```
 nohup ./main &
-`
+```
