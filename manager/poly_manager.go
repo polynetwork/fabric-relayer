@@ -52,7 +52,12 @@ func NewPolyManager(servCfg *config.ServiceConfig, polySdk *sdk.PolySdk, fabrics
 
 func (this *PolyManager) MonitorChain() {
 	monitorTicker := time.NewTicker(config.POLY_MONITOR_INTERVAL)
-	this.currentHeight = this.fabricClient.GetLatestSyncHeight()
+	height, err := this.fabricClient.GetLatestSyncHeight()
+	if err != nil {
+		log.Errorf("GetLatestSyncHeight, err: %v", err)
+	}
+	this.currentHeight = height
+
 	var blockHandleResult bool
 	for {
 		select {
@@ -85,7 +90,11 @@ func (this *PolyManager) MonitorChain() {
 }
 
 func (this *PolyManager) handleDepositEvents(height uint32) bool {
-	lastEpoch := this.fabricClient.GetLatestSyncHeight()
+	lastEpoch, err := this.fabricClient.GetLatestSyncHeight()
+	if err != nil {
+		log.Errorf("GetLatestSyncHeight, err: %v", err)
+		return false
+	}
 	hdr, err := this.polySdk.GetHeaderByHeight(height + 1)
 	if err != nil {
 		log.Errorf("handleBlockHeader - GetNodeHeader on height :%d failed", height)
