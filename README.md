@@ -1,5 +1,12 @@
 # fabric-relayer
 
+## 编译
+
+进入cmd目录，编译
+`
+go build .
+`
+
 ## replayer目录结构
 `
 drwxr-xr-x 8 root root     4096 11月  2 10:51 .
