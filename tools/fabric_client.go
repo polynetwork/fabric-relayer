@@ -33,8 +33,8 @@ type CrossChainEvent struct {
 	TxHash []byte
 }
 
-func newFabSdk() *fabsdk.FabricSDK {
-	sdk, err := fabsdk.New(config.FromFile("./config/config_e2e.yaml"))
+func newFabSdk(confFile string) *fabsdk.FabricSDK {
+	sdk, err := fabsdk.New(config.FromFile(confFile))
 	if err != nil {
 		panic(err)
 	}
@@ -58,11 +58,11 @@ func newChannelClient(sdk *fabsdk.FabricSDK, mychannel string) (*channel.Client,
 	return cc, eventClient,ledgerClient
 }
 
-func NewFabricSdk(channel string, chaincode string) (*FabricSdk, error) {
+func NewFabricSdk(channel, chaincode, confFile string) (*FabricSdk, error) {
 	fabricSdk := &FabricSdk{}
 	fabricSdk.channel = channel
 	fabricSdk.chaincode = chaincode
-	fabricSdk.sdk = newFabSdk()
+	fabricSdk.sdk = newFabSdk(confFile)
 	fabricSdk.channelClient, fabricSdk.eventClient, fabricSdk.ledgerClient = newChannelClient(fabricSdk.sdk, channel)
 	return fabricSdk, nil
 }

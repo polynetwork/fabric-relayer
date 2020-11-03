@@ -57,6 +57,7 @@ type FabricConfig struct {
 	BlockConfig         uint64
 	Channel             string
 	Chaincode           string
+	SdkConfFile	string
 }
 
 func ReadFile(fileName string) ([]byte, error) {

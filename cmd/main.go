@@ -86,7 +86,7 @@ func startServer(ctx *cli.Context) {
 	}
 
 	// create fabric sdk
-	fabricSdk, err := tools.NewFabricSdk(servConfig.FabricConfig.Channel, servConfig.FabricConfig.Chaincode)
+	fabricSdk, err := tools.NewFabricSdk(servConfig.FabricConfig.Channel, servConfig.FabricConfig.Chaincode, servConfig.FabricConfig.SdkConfFile)
 	if err != nil {
 		log.Errorf("startServer - create fabric sdk, err: %s", err)
 		return

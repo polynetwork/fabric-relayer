@@ -9,7 +9,8 @@
     "SideChainId": 7,
     "BlockConfig": 1,
     "Channel":"mychannel",
-    "Chaincode": "ccm1"
+    "Chaincode": "ccm1",
+    "SdkConfFile": "config/config_e2e.yaml"
   },
   "BoltDbPath": "./boltdb"
 }
