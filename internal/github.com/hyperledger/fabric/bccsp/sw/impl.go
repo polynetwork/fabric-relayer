@@ -23,9 +23,9 @@ import (
 	"hash"
 	"reflect"
 
+	"github.com/pkg/errors"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/bccsp"
 	flogging "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/sdkpatch/logbridge"
-	"github.com/pkg/errors"
 )
 
 var (

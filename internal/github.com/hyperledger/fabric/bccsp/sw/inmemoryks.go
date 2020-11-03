@@ -14,8 +14,8 @@ import (
 	"encoding/hex"
 	"sync"
 
-	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/bccsp"
 	"github.com/pkg/errors"
+	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/bccsp"
 )
 
 // NewInMemoryKeyStore instantiates an ephemeral in-memory keystore

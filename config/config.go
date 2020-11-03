@@ -28,21 +28,21 @@ import (
 
 const (
 	FABRIC_MONITOR_INTERVAL = time.Second
-	POLY_MONITOR_INTERVAL = time.Second
+	POLY_MONITOR_INTERVAL   = time.Second
 
-	FABRIC_USEFUL_BLOCK_NUM     = 1
-	POLY_USEFUL_BLOCK_NUM     = 1
+	FABRIC_USEFUL_BLOCK_NUM  = 1
+	POLY_USEFUL_BLOCK_NUM    = 1
 	DEFAULT_CONFIG_FILE_NAME = "./config/config.json"
 	Version                  = "1.0"
 
 	DEFAULT_LOG_LEVEL = log.InfoLog
-	FABRIC_CHAIN_ID = 7
+	FABRIC_CHAIN_ID   = 7
 )
 
 type ServiceConfig struct {
-	PolyConfig      *PolyConfig
-	FabricConfig    *FabricConfig
-	BoltDbPath      string
+	PolyConfig   *PolyConfig
+	FabricConfig *FabricConfig
+	BoltDbPath   string
 }
 
 type PolyConfig struct {
@@ -53,11 +53,13 @@ type PolyConfig struct {
 }
 
 type FabricConfig struct {
-	SideChainId         uint64
-	BlockConfig         uint64
-	Channel             string
-	Chaincode           string
-	SdkConfFile	string
+	SideChainId uint64
+	BlockConfig uint64
+	Channel     string
+	Chaincode   string
+	SdkConfFile string
+	UserName    string
+	OrgName     string
 }
 
 func ReadFile(fileName string) ([]byte, error) {

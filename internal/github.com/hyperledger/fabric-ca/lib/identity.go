@@ -16,12 +16,12 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/pkg/errors"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/lib/client/credential"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/lib/client/credential/x509"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/sdkinternal/pkg/api"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/sdkinternal/pkg/util"
 	log "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/sdkpatch/logbridge"
-	"github.com/pkg/errors"
 )
 
 // Identity is fabric-ca's implementation of an identity

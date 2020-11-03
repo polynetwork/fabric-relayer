@@ -17,8 +17,8 @@ func TestCCQuery(t *testing.T) {
 	channelClient := newChannelClient(sdk, "mychannel")
 	req := channel.Request{
 		ChaincodeID: "basic",
-		Fcn: "GetAllAssets",
-		Args: packArgs([]string{}),
+		Fcn:         "GetAllAssets",
+		Args:        packArgs([]string{}),
 	}
 	response, err := channelClient.Query(req, channel.WithRetry(retry.DefaultChannelOpts))
 	if err != nil {
@@ -32,8 +32,8 @@ func TestCCInvoke(t *testing.T) {
 	channelClient := newChannelClient(sdk, "mychannel")
 	req := channel.Request{
 		ChaincodeID: "basic",
-		Fcn: "TransferAsset",
-		Args: packArgs([]string{"asset6","Christopher"}),
+		Fcn:         "TransferAsset",
+		Args:        packArgs([]string{"asset6", "Christopher"}),
 	}
 	response, err := channelClient.Execute(req, channel.WithRetry(retry.DefaultChannelOpts))
 	if err != nil {
@@ -56,8 +56,8 @@ func TestCCEvent(t *testing.T) {
 
 	req := channel.Request{
 		ChaincodeID: "mycc",
-		Fcn: "query",
-		Args: packArgs([]string{"a"}),
+		Fcn:         "query",
+		Args:        packArgs([]string{"a"}),
 	}
 	response, err := channelClient.Execute(req, channel.WithRetry(retry.DefaultChannelOpts))
 	if err != nil {
@@ -66,9 +66,9 @@ func TestCCEvent(t *testing.T) {
 	fmt.Printf("response: %s\n", string(response.TransactionID))
 
 	select {
-	case ccEvent := <- notifier:
+	case ccEvent := <-notifier:
 		fmt.Printf("receive cc event:%v\n", ccEvent)
-	case <- time.After(time.Second * 60):
+	case <-time.After(time.Second * 60):
 		fmt.Printf("not receive cc event!")
 	}
 }
@@ -123,7 +123,6 @@ func TestQueryInfo(t *testing.T) {
 	}
 	fmt.Printf("height: %d\n", info.BCI.Height)
 }
-
 
 func TestQueryBlock(t *testing.T) {
 	sdk := newFabSdk()

@@ -27,9 +27,9 @@ import (
 	"strings"
 
 	pb "github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/pkg/errors"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/core/chaincode/platforms/util"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/sdkinternal/ccmetadata"
-	"github.com/pkg/errors"
 )
 
 // Platform for chaincodes written in Go

@@ -19,10 +19,10 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	m "github.com/hyperledger/fabric-protos-go/msp"
+	"github.com/pkg/errors"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/bccsp/utils"
 	factory "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/sdkpatch/cryptosuitebridge"
 	"github.com/polynetwork/fabric-relayer/pkg/common/providers/core"
-	"github.com/pkg/errors"
 )
 
 // mspSetupFuncType is the prototype of the setup function

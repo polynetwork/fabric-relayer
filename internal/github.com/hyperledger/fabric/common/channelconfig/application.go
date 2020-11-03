@@ -13,8 +13,8 @@ package channelconfig
 import (
 	cb "github.com/hyperledger/fabric-protos-go/common"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
-	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/common/capabilities"
 	"github.com/pkg/errors"
+	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/common/capabilities"
 )
 
 const (

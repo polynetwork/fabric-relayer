@@ -30,8 +30,8 @@ func TestCrossChainEvent(t *testing.T) {
 
 	req := channel.Request{
 		ChaincodeID: "peth",
-		Fcn: "lock",
-		Args: packArgs([]string{"2", "BC8F34783742ea552C7e8823a2A9e8f58052B4D4", "11"}),
+		Fcn:         "lock",
+		Args:        packArgs([]string{"2", "BC8F34783742ea552C7e8823a2A9e8f58052B4D4", "11"}),
 	}
 	response, err := channelClient.Execute(req, channel.WithRetry(retry.DefaultChannelOpts))
 	if err != nil {
@@ -40,9 +40,9 @@ func TestCrossChainEvent(t *testing.T) {
 	fmt.Printf("response: %s\n", string(response.TransactionID))
 
 	select {
-	case ccEvent := <- notifier:
+	case ccEvent := <-notifier:
 		fmt.Printf("receive cc event:%v\n", ccEvent)
-	case <- time.After(time.Second * 600):
+	case <-time.After(time.Second * 600):
 		fmt.Printf("not receive cc event!")
 	}
 }
@@ -52,8 +52,8 @@ func TestCrossChainSyncHeight(t *testing.T) {
 	channelClient := newChannelClient(sdk, "mychannel")
 	req := channel.Request{
 		ChaincodeID: "ccm1",
-		Fcn: "getPolyEpochHeight",
-		Args: [][]byte{},
+		Fcn:         "getPolyEpochHeight",
+		Args:        [][]byte{},
 	}
 	response, err := channelClient.Query(req, channel.WithRetry(retry.DefaultChannelOpts))
 	if err != nil {
@@ -62,7 +62,6 @@ func TestCrossChainSyncHeight(t *testing.T) {
 	height := binary.LittleEndian.Uint32(response.Payload)
 	fmt.Printf("txid: %s, height: %d\n", response.TransactionID, height)
 }
-
 
 func TestBlockEvent(t *testing.T) {
 	sdk := newFabSdk()

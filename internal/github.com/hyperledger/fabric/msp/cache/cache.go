@@ -11,9 +11,9 @@ Please review third_party pinning scripts and patches for more details.
 package cache
 
 import (
+	"github.com/pkg/errors"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/msp"
 	flogging "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/sdkpatch/logbridge"
-	"github.com/pkg/errors"
 )
 
 const (

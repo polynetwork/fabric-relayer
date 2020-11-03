@@ -20,9 +20,9 @@ Please review third_party pinning scripts and patches for more details.
 package sw
 
 import (
+	"github.com/pkg/errors"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/bccsp"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/bccsp/sw"
-	"github.com/pkg/errors"
 )
 
 const (

@@ -14,6 +14,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	cb "github.com/hyperledger/fabric-protos-go/common"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/pkg/errors"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/common/channelconfig"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/common/genesis"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/common/policies"
@@ -25,7 +26,6 @@ import (
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/sdkinternal/configtxlator/update"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/sdkinternal/pkg/identity"
 	flogging "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/sdkpatch/logbridge"
-	"github.com/pkg/errors"
 )
 
 const (

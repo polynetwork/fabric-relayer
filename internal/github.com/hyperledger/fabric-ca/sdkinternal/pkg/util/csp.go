@@ -35,9 +35,9 @@ import (
 
 	"github.com/cloudflare/cfssl/csr"
 	"github.com/cloudflare/cfssl/helpers"
+	"github.com/pkg/errors"
 	factory "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/sdkpatch/cryptosuitebridge"
 	log "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/sdkpatch/logbridge"
-	"github.com/pkg/errors"
 )
 
 // getBCCSPKeyOpts generates a key as specified in the request.

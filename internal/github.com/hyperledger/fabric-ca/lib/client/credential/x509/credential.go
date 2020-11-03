@@ -19,10 +19,10 @@ import (
 	factory "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/sdkpatch/cryptosuitebridge"
 	log "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/sdkpatch/logbridge"
 
+	"github.com/pkg/errors"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/lib/client/credential"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/sdkinternal/pkg/api"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/sdkinternal/pkg/util"
-	"github.com/pkg/errors"
 )
 
 const (

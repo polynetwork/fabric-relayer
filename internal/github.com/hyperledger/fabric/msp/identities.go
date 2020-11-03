@@ -25,10 +25,10 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go/msp"
+	"github.com/pkg/errors"
 	bccsp "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/sdkpatch/cryptosuitebridge"
 	flogging "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/sdkpatch/logbridge"
 	logging "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/sdkpatch/logbridge"
-	"github.com/pkg/errors"
 )
 
 var mspIdentityLogger = flogging.MustGetLogger("msp.identity")

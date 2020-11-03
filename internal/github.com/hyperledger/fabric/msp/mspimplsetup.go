@@ -19,8 +19,8 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	m "github.com/hyperledger/fabric-protos-go/msp"
-	bccsp "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/sdkpatch/cryptosuitebridge"
 	errors "github.com/pkg/errors"
+	bccsp "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/sdkpatch/cryptosuitebridge"
 )
 
 func (msp *bccspmsp) getCertifiersIdentifier(certRaw []byte) ([]byte, error) {

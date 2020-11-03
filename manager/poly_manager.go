@@ -32,21 +32,21 @@ import (
 )
 
 type PolyManager struct {
-	config         *config.ServiceConfig
+	config        *config.ServiceConfig
 	polySdk       *sdk.PolySdk
 	currentHeight uint32
 	exitChan      chan int
 	db            *db.BoltDB
-	fabricClient     *tools.FabricSdk
+	fabricClient  *tools.FabricSdk
 }
 
 func NewPolyManager(servCfg *config.ServiceConfig, polySdk *sdk.PolySdk, fabricsdk *tools.FabricSdk, boltDB *db.BoltDB) (*PolyManager, error) {
 	return &PolyManager{
-		exitChan:      make(chan int),
-		config:        servCfg,
-		polySdk:       polySdk,
-		db:            boltDB,
-		fabricClient:     fabricsdk,
+		exitChan:     make(chan int),
+		config:       servCfg,
+		polySdk:      polySdk,
+		db:           boltDB,
+		fabricClient: fabricsdk,
 	}, nil
 }
 

@@ -16,8 +16,8 @@ import (
 	"crypto/sha512"
 	"reflect"
 
-	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/bccsp"
 	"github.com/pkg/errors"
+	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/bccsp"
 	"golang.org/x/crypto/sha3"
 )
 

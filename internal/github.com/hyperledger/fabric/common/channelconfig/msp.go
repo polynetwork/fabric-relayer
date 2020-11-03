@@ -15,10 +15,10 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	mspprotos "github.com/hyperledger/fabric-protos-go/msp"
+	"github.com/pkg/errors"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/msp"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/msp/cache"
 	"github.com/polynetwork/fabric-relayer/pkg/common/providers/core"
-	"github.com/pkg/errors"
 )
 
 type pendingMSPConfig struct {

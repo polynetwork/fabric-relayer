@@ -18,8 +18,8 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	cb "github.com/hyperledger/fabric-protos-go/common"
-	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/sdkinternal/pkg/identity"
 	"github.com/pkg/errors"
+	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/sdkinternal/pkg/identity"
 )
 
 // MarshalOrPanic serializes a protobuf message and panics if this

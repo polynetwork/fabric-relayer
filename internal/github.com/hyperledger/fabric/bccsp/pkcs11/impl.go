@@ -15,11 +15,11 @@ import (
 	"crypto/x509"
 	"os"
 
+	"github.com/pkg/errors"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/bccsp"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/bccsp/sw"
 	flogging "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric/sdkpatch/logbridge"
 	sdkp11 "github.com/polynetwork/fabric-relayer/pkg/core/cryptosuite/common/pkcs11"
-	"github.com/pkg/errors"
 )
 
 var (

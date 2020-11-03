@@ -15,7 +15,7 @@ func newFabSdk() *fabsdk.FabricSDK {
 	if err != nil {
 		panic("get current work directory failed!")
 	}
-	os.Setenv("FABRIC_RELAYER_PATH", dir + "/..")
+	os.Setenv("FABRIC_RELAYER_PATH", dir+"/..")
 
 	sdk, err := fabsdk.New(config.FromFile("./../config/config_e2e.yaml"))
 	if err != nil {

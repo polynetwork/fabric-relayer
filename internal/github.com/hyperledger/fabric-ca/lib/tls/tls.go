@@ -27,10 +27,10 @@ import (
 
 	"github.com/polynetwork/fabric-relayer/pkg/common/providers/core"
 
+	"github.com/pkg/errors"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/sdkinternal/pkg/util"
 	factory "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/sdkpatch/cryptosuitebridge"
 	log "github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/sdkpatch/logbridge"
-	"github.com/pkg/errors"
 )
 
 // DefaultCipherSuites is a set of strong TLS cipher suites

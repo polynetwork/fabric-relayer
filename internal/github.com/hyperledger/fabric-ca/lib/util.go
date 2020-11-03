@@ -17,8 +17,8 @@ import (
 	"encoding/pem"
 	"net/http"
 
-	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/sdkinternal/pkg/util"
 	"github.com/pkg/errors"
+	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/sdkinternal/pkg/util"
 )
 
 var clientAuthTypes = map[string]tls.ClientAuthType{

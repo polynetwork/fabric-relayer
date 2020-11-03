@@ -25,19 +25,19 @@ import (
 	"github.com/polynetwork/fabric-relayer/tools"
 	sdk "github.com/polynetwork/poly-go-sdk"
 	"github.com/polynetwork/poly/common"
-	autils "github.com/polynetwork/poly/native/service/utils"
 	scom "github.com/polynetwork/poly/native/service/header_sync/common"
+	autils "github.com/polynetwork/poly/native/service/utils"
 	"time"
 )
 
 type FabricManager struct {
-	config         *config.ServiceConfig
-	client         *tools.FabricSdk
-	polySdk        *sdk.PolySdk
-	polySigner     *sdk.Account
-	exitChan       chan int
-	db             *db.BoltDB
-	currentHeight     uint64
+	config        *config.ServiceConfig
+	client        *tools.FabricSdk
+	polySdk       *sdk.PolySdk
+	polySigner    *sdk.Account
+	exitChan      chan int
+	db            *db.BoltDB
+	currentHeight uint64
 }
 
 func NewFabricManager(
@@ -83,12 +83,12 @@ func NewFabricManager(
 	log.Infof("NewFabricManager - poly user address: %s", signer.Address.ToBase58())
 
 	mgr = &FabricManager{
-		config:        servconfig,
-		exitChan:      make(chan int),
-		client:        client,
-		polySdk:       ontsdk,
-		polySigner:    signer,
-		db:            boltDB,
+		config:     servconfig,
+		exitChan:   make(chan int),
+		client:     client,
+		polySdk:    ontsdk,
+		polySigner: signer,
+		db:         boltDB,
 	}
 	return mgr, nil
 }
@@ -130,44 +130,44 @@ func (e *FabricManager) MonitorChain() {
 	monitorTicker := time.NewTicker(config.FABRIC_MONITOR_INTERVAL)
 	for {
 		select {
-		case <- monitorTicker.C:
+		case <-monitorTicker.C:
 			height, err := e.client.GetLatestHeight()
 			if err != nil {
 				log.Infof("MonitorChain - cannot get node height, err: %s", err)
 				continue
 			}
-			if height - e.currentHeight <= config.FABRIC_USEFUL_BLOCK_NUM {
+			if height-e.currentHeight <= config.FABRIC_USEFUL_BLOCK_NUM {
 				continue
 			}
 			log.Infof("MonitorChain - fabric height is %d", height)
-			for e.currentHeight < height - config.FABRIC_USEFUL_BLOCK_NUM {
+			for e.currentHeight < height-config.FABRIC_USEFUL_BLOCK_NUM {
 				blockHandleResult := e.HandleNewBlock(e.currentHeight + 1)
 				if blockHandleResult == false {
 					break
 				}
-				e.currentHeight ++
+				e.currentHeight++
 			}
 		}
 	}
 
 	/*
-	reg, notifier, err := e.client.RegisterCrossChainEvent()
-	if err != nil {
-		log.Errorf("failed to register cc event!")
-	}
-	defer e.client.Unregister(reg)
-
-	go e.Test()
-
-	for {
-		select {
-		case ccEvent := <-notifier:
-			fmt.Printf("receive cc event:%v\n", ccEvent)
-			txHash, _ := hex.DecodeString(ccEvent.TxID)
-			value := ccEvent.Payload
-			e.commitCrossChainEvent(uint32(ccEvent.BlockNumber), []byte{}, value, txHash)
+		reg, notifier, err := e.client.RegisterCrossChainEvent()
+		if err != nil {
+			log.Errorf("failed to register cc event!")
 		}
-	}
+		defer e.client.Unregister(reg)
+
+		go e.Test()
+
+		for {
+			select {
+			case ccEvent := <-notifier:
+				fmt.Printf("receive cc event:%v\n", ccEvent)
+				txHash, _ := hex.DecodeString(ccEvent.TxID)
+				value := ccEvent.Payload
+				e.commitCrossChainEvent(uint32(ccEvent.BlockNumber), []byte{}, value, txHash)
+			}
+		}
 	*/
 }
 
@@ -209,4 +209,3 @@ func (e *FabricManager) Test() {
 		e.client.Lock()
 	}
 }
-

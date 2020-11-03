@@ -16,9 +16,9 @@ import (
 
 	"github.com/polynetwork/fabric-relayer/pkg/common/providers/core"
 
+	"github.com/pkg/errors"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/lib/attrmgr"
 	"github.com/polynetwork/fabric-relayer/internal/github.com/hyperledger/fabric-ca/sdkinternal/pkg/util"
-	"github.com/pkg/errors"
 )
 
 // NewSigner is constructor for Signer
