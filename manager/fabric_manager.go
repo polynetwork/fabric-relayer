@@ -133,14 +133,14 @@ func (e *FabricManager) MonitorChain() {
 		case <-monitorTicker.C:
 			height, err := e.client.GetLatestHeight()
 			if err != nil {
-				log.Infof("MonitorChain - cannot get node height, err: %s", err)
+				log.Errorf("MonitorChain - cannot get node height, err: %s", err)
 				continue
 			}
-			if height - e.currentHeight <= config.FABRIC_USEFUL_BLOCK_NUM {
+			if height - e.currentHeight <= e.config.FabricConfig.BlockConfig {
 				continue
 			}
 			log.Infof("MonitorChain - fabric height is %d", height)
-			for e.currentHeight < height - config.FABRIC_USEFUL_BLOCK_NUM {
+			for e.currentHeight < height - e.config.FabricConfig.BlockConfig {
 				blockHandleResult := e.HandleNewBlock(e.currentHeight + 1)
 				if blockHandleResult == false {
 					break
@@ -149,26 +149,6 @@ func (e *FabricManager) MonitorChain() {
 			}
 		}
 	}
-
-	/*
-		reg, notifier, err := e.client.RegisterCrossChainEvent()
-		if err != nil {
-			log.Errorf("failed to register cc event!")
-		}
-		defer e.client.Unregister(reg)
-
-		go e.Test()
-
-		for {
-			select {
-			case ccEvent := <-notifier:
-				fmt.Printf("receive cc event:%v\n", ccEvent)
-				txHash, _ := hex.DecodeString(ccEvent.TxID)
-				value := ccEvent.Payload
-				e.commitCrossChainEvent(uint32(ccEvent.BlockNumber), []byte{}, value, txHash)
-			}
-		}
-	*/
 }
 
 func (e *FabricManager) HandleNewBlock(height uint64) bool {
