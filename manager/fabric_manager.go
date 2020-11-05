@@ -103,7 +103,7 @@ func (this *FabricManager) init() error {
 
 func (this *FabricManager) findLastestHeight() uint64 {
 	// try to get key
-	var sideChainId uint64 = config.FABRIC_CHAIN_ID
+	var sideChainId uint64 = this.config.FabricConfig.SideChainId
 	var sideChainIdBytes [8]byte
 	binary.LittleEndian.PutUint64(sideChainIdBytes[:], sideChainId)
 	contractAddress := autils.HeaderSyncContractAddress
