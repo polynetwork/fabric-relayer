@@ -76,12 +76,13 @@ func TestCCEvent(t *testing.T) {
 func TestQueryTransaction(t *testing.T) {
 	sdk := newFabSdk()
 	ledgerClient := newLedgerClient(sdk, "mychannel")
-	tx, err := ledgerClient.QueryTransaction("5c69313e45b78a951a5ea01ad66de45ed11b198eeb3cd8f06bc968c0ff8e0cc9")
+	tx, err := ledgerClient.QueryTransaction("0da2b2d4618db861a77bc8085a85084ad4533538ae0866bc8d01266ceeba5dbf")
 	if err != nil {
 		panic(err)
 	}
 	//fmt.Printf("transaction: %s\n", string(tx.TransactionEnvelope.Payload))
 
+	fmt.Printf("code: %d\n", tx.ValidationCode)
 	pl := &common.Payload{}
 	err = proto.Unmarshal(tx.TransactionEnvelope.Payload, pl)
 	if err != nil {

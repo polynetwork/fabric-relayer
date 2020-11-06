@@ -9,7 +9,7 @@
     "SideChainId": 7,
     "BlockConfig": 1,
     "Channel":"mychannel",
-    "Chaincode": "ccm1",
+    "Chaincode": "ccm",
     "SdkConfFile": "config/config_e2e.yaml",
     "UserName": "Admin",
     "OrgName": "Org1"
