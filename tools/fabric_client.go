@@ -104,14 +104,17 @@ func (sdk *FabricSdk) GetCrossChainEvent(height uint64) ([]*CrossChainEvent, err
 		if err != nil {
 			return nil, err
 		}
-
 		for _, e := range cas {
 			chaincodeEvent := &peer.ChaincodeEvent{}
 			err = proto.Unmarshal(e.Events, chaincodeEvent)
 			if err != nil {
 				return nil, err
 			}
-			log.Infof("GetCrossChainEvent, height: %d, txid: %s, event: %s\n", height, chaincodeEvent.TxId, chaincodeEvent.EventName)
+			txValidateCode, err := sdk.GetTransactionValidateCode(chaincodeEvent.TxId)
+			if err != nil {
+				return nil, err
+			}
+			log.Infof("GetCrossChainEvent, height: %d, txid: %s, validate code: %d, event: %s\n", height, chaincodeEvent.TxId, txValidateCode, chaincodeEvent.EventName)
 			if strings.Contains(chaincodeEvent.EventName, "from_ccm") {
 				txHash, _ := hex.DecodeString(chaincodeEvent.TxId)
 				events = append(events, &CrossChainEvent{
@@ -167,6 +170,14 @@ func (sdk *FabricSdk) GetLatestSyncHeight() (uint32, error) {
 	}
 	height := binary.LittleEndian.Uint32(response.Payload)
 	return height, nil
+}
+
+func (sdk *FabricSdk) GetTransactionValidateCode(txId string) (int32, error) {
+	tx, err := sdk.ledgerClient.QueryTransaction(fab.TransactionID(txId))
+	if err != nil {
+		return -1, err
+	}
+	return tx.ValidationCode, nil
 }
 
 func (sdk *FabricSdk) Lock() {
