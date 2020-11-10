@@ -15,17 +15,12 @@
     "OrgName": "Org1",
     "TrustChainFiles": [
       [
-        "rootCA",
-        "userCA"
-      ],
-      [
-        "rootCA1",
-        "userCA1"
+        "/data/gopath/src/github.com/polynetwork/fabric-relayer/root-cert.pem",
+        "/data/gopath/src/github.com/polynetwork/fabric-relayer/user1-cert.pem"
       ]
     ],
     "PrivateKeyFiles": [
-      "file_for_userCA",
-      "file_for_userCA1"
+      "/data/gopath/src/github.com/polynetwork/fabric-relayer/user1_sk"
     ]
   },
   "BoltDbPath": "./boltdb"
