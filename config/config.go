@@ -60,6 +60,8 @@ type FabricConfig struct {
 	SdkConfFile string
 	UserName    string
 	OrgName     string
+	TrustChainFiles [][]string
+	PrivateKeyFiles []string
 }
 
 func ReadFile(fileName string) ([]byte, error) {

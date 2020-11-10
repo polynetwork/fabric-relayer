@@ -12,7 +12,21 @@
     "Chaincode": "ccm",
     "SdkConfFile": "config/config_e2e.yaml",
     "UserName": "Admin",
-    "OrgName": "Org1"
+    "OrgName": "Org1",
+    "TrustChainFiles": [
+      [
+        "rootCA",
+        "userCA"
+      ],
+      [
+        "rootCA1",
+        "userCA1"
+      ]
+    ],
+    "PrivateKeyFiles": [
+      "file_for_userCA",
+      "file_for_userCA1"
+    ]
   },
   "BoltDbPath": "./boltdb"
 }

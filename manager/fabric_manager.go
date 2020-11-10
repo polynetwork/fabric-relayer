@@ -17,16 +17,24 @@
 package manager
 
 import (
+	"crypto"
+	"crypto/ecdsa"
+	"crypto/rand"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/pem"
 	"github.com/polynetwork/fabric-relayer/config"
 	"github.com/polynetwork/fabric-relayer/db"
 	"github.com/polynetwork/fabric-relayer/log"
 	"github.com/polynetwork/fabric-relayer/tools"
 	sdk "github.com/polynetwork/poly-go-sdk"
 	"github.com/polynetwork/poly/common"
+	"github.com/polynetwork/poly/native/service/cross_chain_manager/fabric"
 	scom "github.com/polynetwork/poly/native/service/header_sync/common"
 	autils "github.com/polynetwork/poly/native/service/utils"
+	"github.com/tjfoc/gmsm/pkcs12"
+	"github.com/tjfoc/gmsm/sm2"
+	"io/ioutil"
 	"time"
 )
 
@@ -38,6 +46,8 @@ type FabricManager struct {
 	exitChan      chan int
 	db            *db.BoltDB
 	currentHeight uint64
+	fabPrivks []*ecdsa.PrivateKey
+	multiTrustChain scom.MultiCertTrustChain
 }
 
 func NewFabricManager(
@@ -80,6 +90,44 @@ func NewFabricManager(
 		return
 	}
 
+	mtc := scom.MultiCertTrustChain(make([]*scom.CertTrustChain, len(servconfig.FabricConfig.TrustChainFiles)))
+	for i, files := range servconfig.FabricConfig.TrustChainFiles {
+		tc := &scom.CertTrustChain{
+			Certs: make([]*sm2.Certificate, len(files)),
+		}
+		for j, tcFile := range files {
+			raw, err := ioutil.ReadFile(tcFile)
+			if err != nil {
+				log.Errorf("NewFabricManager - failed to read %s: %v", tcFile, err)
+				return nil, err
+			}
+
+			blk, _ := pem.Decode(raw)
+			tc.Certs[j], err = sm2.ParseCertificate(blk.Bytes)
+			if err != nil {
+				log.Errorf("NewFabricManager - failed to parse %s to cert: %v", tcFile, err)
+				return nil, err
+			}
+		}
+		mtc[i] = tc
+	}
+
+	privks := make([]*ecdsa.PrivateKey, len(servconfig.FabricConfig.PrivateKeyFiles))
+	for i, file := range servconfig.FabricConfig.PrivateKeyFiles {
+		raw, err := ioutil.ReadFile(file)
+		if err != nil {
+			log.Errorf("NewFabricManager - failed to read %s: %v", file, err)
+			return nil, err
+		}
+		blk, _ := pem.Decode(raw)
+		key, err := pkcs12.ParsePKCS8PrivateKey(blk.Bytes)
+		if err != nil {
+			log.Errorf("NewFabricManager - failed to parse %s to private key: %v", file, err)
+			return nil, err
+		}
+		privks[i] = key.(*ecdsa.PrivateKey)
+	}
+
 	log.Infof("NewFabricManager - poly user address: %s", signer.Address.ToBase58())
 
 	mgr = &FabricManager{
@@ -89,6 +137,8 @@ func NewFabricManager(
 		polySdk:    ontsdk,
 		polySigner: signer,
 		db:         boltDB,
+		multiTrustChain: mtc,
+		fabPrivks: privks,
 	}
 	return mgr, nil
 }
@@ -158,20 +208,38 @@ func (e *FabricManager) HandleNewBlock(height uint64) bool {
 		return false
 	}
 	for _, event := range events {
-		e.commitCrossChainEvent(uint32(height), []byte{}, event.Data, event.TxHash)
+		e.commitCrossChainEvent(uint32(height), event.Data, event.TxHash)
 	}
 	return true
 }
 
-func (e *FabricManager) commitCrossChainEvent(height uint32, proof []byte, value []byte, txhash []byte) (string, error) {
-	log.Debugf("commit proof, height: %d, proof: %s, value: %s, txhash: %s", height, string(proof), hex.EncodeToString(value), hex.EncodeToString(txhash))
+func (e *FabricManager) commitCrossChainEvent(height uint32, value []byte, txhash []byte) (string, error) {
+	log.Debugf("commit proof, height: %d, value: %s, txhash: %s", height, hex.EncodeToString(value), hex.EncodeToString(txhash))
+
+	hash := crypto.SHA256.New()
+	hash.Write(value)
+	digest := hash.Sum(nil)
+
+	sigs := make([][]byte, len(e.fabPrivks))
+	for i, k := range e.fabPrivks {
+		sig, err := k.Sign(rand.Reader, digest, nil)
+		if err != nil {
+			log.Errorf("No.%d failed to sign: %v", i, err)
+			return "", err
+		}
+		sigs[i] = sig
+	}
+
+	sink := common.NewZeroCopySink(nil)
+	e.multiTrustChain.Serialization(sink)
+
 	tx, err := e.polySdk.Native.Ccm.ImportOuterTransfer(
 		e.config.FabricConfig.SideChainId,
 		value,
 		height,
-		proof,
+		fabric.SigArrSerialize(sigs),
 		e.polySigner.Address[:],
-		[]byte{},
+		sink.Bytes(),
 		e.polySigner)
 	if err != nil {
 		log.Errorf("commitProof err: %v", err)

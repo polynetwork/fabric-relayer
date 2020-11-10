@@ -13,3 +13,5 @@ build/wallet
 main
 nohup.out
 *._test.go
+ordererOrganizations/
+peerOrganizations/

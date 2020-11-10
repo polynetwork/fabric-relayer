@@ -26,16 +26,19 @@ require (
 	github.com/polynetwork/eth-contracts v0.0.0-20200814062128-70f58e22b014 // indirect
 	github.com/polynetwork/poly v0.0.0-20200722075529-eea88acb37b2
 	github.com/polynetwork/poly-go-sdk v0.0.0-20200729103825-af447ef53ef0
-	github.com/prometheus/client_golang v1.5.0
+	github.com/prometheus/client_golang v1.5.1
 	github.com/sykesm/zap-logfmt v0.0.4 // indirect
+	github.com/tjfoc/gmsm v1.3.2-0.20200914155643-24d14c7bd05c
 	github.com/urfave/cli v1.22.4
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
-	google.golang.org/grpc v1.29.1
+	google.golang.org/grpc v1.30.0
 	gopkg.in/yaml.v2 v2.3.0
 	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 // indirect
 )
 
 replace (
 	github.com/go-kit/kit v0.10.0 => github.com/go-kit/kit v0.8.0
+	github.com/polynetwork/poly => github.com/zouxyan/poly v0.0.0-20201110080649-bde9b073a9fc
+	github.com/tjfoc/gmsm => github.com/zouxyan/gmsm v1.3.2-0.20200925082225-a66aabdb8da8
 	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 => github.com/go-check/check v0.0.0-20180628173108-788fd7840127
 )
