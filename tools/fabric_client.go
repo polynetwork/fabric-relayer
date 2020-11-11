@@ -147,7 +147,7 @@ func (sdk *FabricSdk) PolyHeader(header []byte) error {
 	req := channel.Request{
 		ChaincodeID: sdk.chaincode,
 		Fcn:         "changeBookKeeper",
-		Args:        [][]byte{header},
+		Args:        [][]byte{[]byte(hex.EncodeToString(header))},
 	}
 	response, err := sdk.channelClient.Execute(req, channel.WithRetry(retry.DefaultChannelOpts))
 	if err != nil {
