@@ -113,7 +113,10 @@ func (sdk *FabricSdk) GetCrossChainEvent(height uint64) ([]*CrossChainEvent, err
 			if len(chaincodeEvent.TxId) == 0 {
 				continue
 			}
-			txValidateCode, _ := sdk.GetTransactionValidateCode(chaincodeEvent.TxId)
+			txValidateCode, err := sdk.GetTransactionValidateCode(chaincodeEvent.TxId)
+			if err != nil {
+				return nil, err
+			}
 			log.Infof("GetCrossChainEvent, height: %d, txid: %s, validate code: %d, event: %s\n", height, chaincodeEvent.TxId, txValidateCode, chaincodeEvent.EventName)
 			if txValidateCode == 0 && strings.Contains(chaincodeEvent.EventName, "from_ccm") {
 				txHash, _ := hex.DecodeString(chaincodeEvent.TxId)
