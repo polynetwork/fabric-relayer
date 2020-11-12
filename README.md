@@ -42,7 +42,7 @@ drwxr-xr-x 4 root root     4096 11月  2 10:40 ..
 ```
 {
   "PolyConfig": {
-    "RestURL": "http://106.75.226.11:40336",
+    "RestURL": "http://ip:40336",
     "EntranceContractAddress": "0300000000000000000000000000000000000000",
     "WalletFile": "./wallet/wallet.dat",
     "WalletPwd": "4cUYqGj2yib718E7ZmGQc"
@@ -51,9 +51,21 @@ drwxr-xr-x 4 root root     4096 11月  2 10:40 ..
     "SideChainId": 7,
     "BlockConfig": 1,
     "Channel":"mychannel",
-    "Chaincode": "ccm1"
+    "Chaincode": "ccm",
+    "SdkConfFile": "config/config_e2e.yaml",
+    "UserName": "Admin",
+    "OrgName": "Org1",
+    "TrustChainFiles": [
+      [
+        "/data/gopath/src/github.com/polynetwork/fabric-relayer/root-cert.pem",
+        "/data/gopath/src/github.com/polynetwork/fabric-relayer/user1-cert.pem"
+      ]
+    ],
+    "PrivateKeyFiles": [
+      "/data/gopath/src/github.com/polynetwork/fabric-relayer/user1_sk"
+    ]
   },
-  "BoltDbPath": "./boltdb",
+  "BoltDbPath": "./boltdb"
 }
 ```
 
@@ -68,6 +80,8 @@ relayer全局配置包括三部分：
 
 + Channel: 跨链管理合约部署的channel
 + Chaincode: 跨链管理合约的链码ID
++ TrustChainFiles：这个数组包含了relayer的Fabric证书的信任链，第一个*root-cert.pem*是组织的根证书，第二个是组织签发给relayer的证书，如果有中间证书，则按照根证书->中间证书->...->中间证书->relayer证书。
++ PrivateKeyFiles：这个数组包含了relayer证书对应的私钥。
 
 3、bolt数据库
 + BoltDbPath: bolt数据库文件存放路径
