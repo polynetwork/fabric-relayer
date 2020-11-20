@@ -237,6 +237,37 @@ func (w *BoltDB) GetPolyHeight() uint32 {
 	return h
 }
 
+func (w *BoltDB) UpdateFabHeight(h uint64) error {
+	w.rwlock.Lock()
+	defer w.rwlock.Unlock()
+
+	raw := make([]byte, 8)
+	binary.LittleEndian.PutUint64(raw, h)
+
+	return w.db.Update(func(tx *bolt.Tx) error {
+		bkt := tx.Bucket(BKTHeight)
+		return bkt.Put([]byte("fab_height"), raw)
+	})
+}
+
+func (w *BoltDB) GetFabHeight() uint64 {
+	w.rwlock.RLock()
+	defer w.rwlock.RUnlock()
+
+	var h uint64
+	_ = w.db.View(func(tx *bolt.Tx) error {
+		bkt := tx.Bucket(BKTHeight)
+		raw := bkt.Get([]byte("fab_height"))
+		if len(raw) == 0 {
+			h = 3
+			return nil
+		}
+		h = binary.LittleEndian.Uint64(raw)
+		return nil
+	})
+	return h
+}
+
 func (w *BoltDB) Close() {
 	w.rwlock.Lock()
 	w.db.Close()

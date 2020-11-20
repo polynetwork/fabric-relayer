@@ -19,6 +19,7 @@ package manager
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"github.com/polynetwork/fabric-relayer/config"
 	"github.com/polynetwork/fabric-relayer/db"
 	"github.com/polynetwork/fabric-relayer/log"
@@ -40,23 +41,29 @@ type PolyManager struct {
 	fabricClient  *tools.FabricSdk
 }
 
-func NewPolyManager(servCfg *config.ServiceConfig, polySdk *sdk.PolySdk, fabricsdk *tools.FabricSdk, boltDB *db.BoltDB) (*PolyManager, error) {
+func NewPolyManager(servCfg *config.ServiceConfig, polySdk *sdk.PolySdk, fabricsdk *tools.FabricSdk, boltDB *db.BoltDB, startHeight uint32) (*PolyManager, error) {
 	return &PolyManager{
 		exitChan:     make(chan int),
 		config:       servCfg,
 		polySdk:      polySdk,
 		db:           boltDB,
 		fabricClient: fabricsdk,
+		currentHeight: startHeight,
 	}, nil
 }
 
 func (this *PolyManager) MonitorChain() {
 	monitorTicker := time.NewTicker(config.POLY_MONITOR_INTERVAL)
-	height, err := this.fabricClient.GetLatestSyncHeight()
-	if err != nil {
-		log.Errorf("GetLatestSyncHeight, err: %v", err)
+	if this.currentHeight == 0 {
+		height, err := this.fabricClient.GetLatestSyncHeight()
+		if err != nil {
+			panic(fmt.Errorf("GetLatestSyncHeight, err: %v", err))
+		}
+		dbh := this.db.GetPolyHeight()
+		if dbh > height {
+			this.currentHeight = dbh
+		}
 	}
-	this.currentHeight = height
 
 	var blockHandleResult bool
 	for {

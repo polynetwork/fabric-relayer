@@ -20,7 +20,6 @@ import (
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/rand"
-	"encoding/binary"
 	"encoding/hex"
 	"encoding/pem"
 	"github.com/polynetwork/fabric-relayer/config"
@@ -31,7 +30,6 @@ import (
 	"github.com/polynetwork/poly/common"
 	"github.com/polynetwork/poly/native/service/cross_chain_manager/fabric"
 	scom "github.com/polynetwork/poly/native/service/header_sync/common"
-	autils "github.com/polynetwork/poly/native/service/utils"
 	"github.com/tjfoc/gmsm/pkcs12"
 	"github.com/tjfoc/gmsm/sm2"
 	"io/ioutil"
@@ -55,6 +53,7 @@ func NewFabricManager(
 	ontsdk *sdk.PolySdk,
 	client *tools.FabricSdk,
 	boltDB *db.BoltDB,
+	forceHeight uint64,
 ) (mgr *FabricManager, err error) {
 
 	var (
@@ -139,44 +138,20 @@ func NewFabricManager(
 		db:         boltDB,
 		multiTrustChain: mtc,
 		fabPrivks: privks,
+		currentHeight: forceHeight,
 	}
 	return mgr, nil
 }
 
-func (this *FabricManager) init() error {
-	// get latest height
-	latestHeight := this.findLastestHeight()
-	log.Infof("init - latest synced height: %d", latestHeight)
-	this.currentHeight = latestHeight
-	return nil
-}
-
-func (this *FabricManager) findLastestHeight() uint64 {
-	// try to get key
-	var sideChainId uint64 = this.config.FabricConfig.SideChainId
-	var sideChainIdBytes [8]byte
-	binary.LittleEndian.PutUint64(sideChainIdBytes[:], sideChainId)
-	contractAddress := autils.HeaderSyncContractAddress
-	key := append([]byte(scom.CURRENT_HEADER_HEIGHT), sideChainIdBytes[:]...)
-	// try to get storage
-	result, err := this.polySdk.GetStorage(contractAddress.ToHexString(), key)
-	if err != nil {
-		log.Errorf("find latest height err: %v", err)
-		return 3
+func (this *FabricManager) init() {
+	if this.currentHeight == 3 {
+		this.currentHeight = this.db.GetFabHeight()
 	}
-	if result == nil || len(result) == 0 {
-		return 3
-	} else {
-		return binary.LittleEndian.Uint64(result)
-	}
+	log.Infof("init - latest synced height: %d", this.currentHeight)
 }
 
 func (e *FabricManager) MonitorChain() {
-	err := e.init()
-	if err != nil {
-		log.Errorf("init failed! err: %v", err)
-		return
-	}
+	e.init()
 	monitorTicker := time.NewTicker(config.FABRIC_MONITOR_INTERVAL)
 	for {
 		select {
@@ -196,7 +171,12 @@ func (e *FabricManager) MonitorChain() {
 					break
 				}
 				e.currentHeight++
+				if err = e.db.UpdateFabHeight(e.currentHeight - 1); err != nil {
+					log.Errorf("MonitorChain - failed to save height of fabric: %v", err)
+				}
 			}
+		case <-e.exitChan:
+			return
 		}
 	}
 }

@@ -47,6 +47,8 @@ func setupApp() *cli.App {
 		logLevelFlag,
 		configPathFlag,
 		logDirFlag,
+		polyStartHeight,
+		fabStartHeight,
 	}
 	app.Commands = []cli.Command{}
 	app.Before = func(context *cli.Context) error {
@@ -105,8 +107,10 @@ func startServer(ctx *cli.Context) {
 		return
 	}
 
-	initPolyServer(servConfig, polySdk, fabricSdk, boltDB)
-	initFabricServer(servConfig, polySdk, fabricSdk, boltDB)
+	fHeight := ctx.GlobalUint64(fabStartHeight.Name)
+	pHeight := ctx.GlobalUint64(polyStartHeight.Name)
+	initPolyServer(servConfig, polySdk, fabricSdk, boltDB, uint32(pHeight))
+	initFabricServer(servConfig, polySdk, fabricSdk, boltDB, fHeight)
 	waitToExit()
 }
 
@@ -134,8 +138,8 @@ func waitToExit() {
 	<-exit
 }
 
-func initFabricServer(servConfig *config.ServiceConfig, polysdk *sdk.PolySdk, fabricsdk *tools.FabricSdk, boltDB *db.BoltDB) {
-	mgr, err := manager.NewFabricManager(servConfig, polysdk, fabricsdk, boltDB)
+func initFabricServer(servConfig *config.ServiceConfig, polysdk *sdk.PolySdk, fabricsdk *tools.FabricSdk, boltDB *db.BoltDB, startHeight uint64) {
+	mgr, err := manager.NewFabricManager(servConfig, polysdk, fabricsdk, boltDB, startHeight)
 	if err != nil {
 		log.Error("initFabricServer - fabric service start err: %s", err.Error())
 		return
@@ -143,8 +147,8 @@ func initFabricServer(servConfig *config.ServiceConfig, polysdk *sdk.PolySdk, fa
 	go mgr.MonitorChain()
 }
 
-func initPolyServer(servConfig *config.ServiceConfig, polysdk *sdk.PolySdk, fabricsdk *tools.FabricSdk, boltDB *db.BoltDB) {
-	mgr, err := manager.NewPolyManager(servConfig, polysdk, fabricsdk, boltDB)
+func initPolyServer(servConfig *config.ServiceConfig, polysdk *sdk.PolySdk, fabricsdk *tools.FabricSdk, boltDB *db.BoltDB, startHeight uint32) {
+	mgr, err := manager.NewPolyManager(servConfig, polysdk, fabricsdk, boltDB, startHeight)
 	if err != nil {
 		log.Error("initPolyServer - poly service start failed: %v", err)
 		return

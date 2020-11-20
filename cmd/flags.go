@@ -41,6 +41,18 @@ var (
 		Usage: "log directory",
 		Value: "./Log/",
 	}
+
+	polyStartHeight = cli.Uint64Flag{
+		Name: "poly",
+		Usage: "the poly start height",
+		Value: 0,
+	}
+
+	fabStartHeight = cli.Uint64Flag{
+		Name: "fabric",
+		Usage: "the fabric start height",
+		Value: 3,
+	}
 )
 
 //getFlagName deal with short flag, and return the flag name whether flag name have short name
