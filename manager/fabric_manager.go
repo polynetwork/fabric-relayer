@@ -92,21 +92,21 @@ func NewFabricManager(
 	mtc := scom.MultiCertTrustChain(make([]*scom.CertTrustChain, len(servconfig.FabricConfig.TrustChainFiles)))
 	for i, files := range servconfig.FabricConfig.TrustChainFiles {
 		tc := &scom.CertTrustChain{
-			Certs: make([]*sm2.Certificate, len(files)),
+			Certs: make([]*sm2.Certificate, 0),
 		}
-		for j, tcFile := range files {
+		for _, tcFile := range files {
 			raw, err := ioutil.ReadFile(tcFile)
 			if err != nil {
 				log.Errorf("NewFabricManager - failed to read %s: %v", tcFile, err)
 				return nil, err
 			}
-
-			blk, _ := pem.Decode(raw)
-			tc.Certs[j], err = sm2.ParseCertificate(blk.Bytes)
+			res := getCAChain(raw)
+			certs, err := sm2.ParseCertificates(res)
 			if err != nil {
 				log.Errorf("NewFabricManager - failed to parse %s to cert: %v", tcFile, err)
 				return nil, err
 			}
+			tc.Certs = append(tc.Certs, certs...)
 		}
 		mtc[i] = tc
 	}
@@ -141,6 +141,15 @@ func NewFabricManager(
 		currentHeight: forceHeight,
 	}
 	return mgr, nil
+}
+
+func getCAChain(rest []byte) []byte {
+	if len(rest) == 0 {
+		return make([]byte, 0)
+	}
+	blk, rest := pem.Decode(rest)
+	newOne := getCAChain(rest)
+	return append(newOne, blk.Bytes...)
 }
 
 func (this *FabricManager) init() {
