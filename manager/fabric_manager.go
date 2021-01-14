@@ -36,6 +36,8 @@ import (
 	"time"
 )
 
+type parseFunc func(der []byte) (interface{}, error)
+
 type FabricManager struct {
 	config        *config.ServiceConfig
 	client        *tools.FabricSdk
@@ -44,7 +46,7 @@ type FabricManager struct {
 	exitChan      chan int
 	db            *db.BoltDB
 	currentHeight uint64
-	fabPrivks []*ecdsa.PrivateKey
+	fabPrivks []interface{}
 	multiTrustChain scom.MultiCertTrustChain
 }
 
@@ -64,12 +66,7 @@ func NewFabricManager(
 		pwd = []byte(servconfig.PolyConfig.WalletPwd)
 	)
 
-	// open wallet with poly sdk
-	if !common.FileExisted(wf) {
-		wallet, err = ontsdk.CreateWallet(wf)
-	} else {
-		wallet, err = ontsdk.OpenWallet(wf)
-	}
+	wallet, err = ontsdk.OpenWallet(wf)
 	if err != nil {
 		log.Errorf("NewFabricManager - open poly wallet error: %s", err.Error())
 		return
@@ -111,7 +108,16 @@ func NewFabricManager(
 		mtc[i] = tc
 	}
 
-	privks := make([]*ecdsa.PrivateKey, len(servconfig.FabricConfig.PrivateKeyFiles))
+	var pf parseFunc
+	switch servconfig.FabricConfig.IsGM {
+	case true:
+		pf = func(der []byte) (interface{}, error) {
+			return sm2.ParsePKCS8UnecryptedPrivateKey(der)
+		}
+	case false:
+		pf = pkcs12.ParsePKCS8PrivateKey
+	}
+	privks := make([]interface{}, len(servconfig.FabricConfig.PrivateKeyFiles))
 	for i, file := range servconfig.FabricConfig.PrivateKeyFiles {
 		raw, err := ioutil.ReadFile(file)
 		if err != nil {
@@ -119,12 +125,11 @@ func NewFabricManager(
 			return nil, err
 		}
 		blk, _ := pem.Decode(raw)
-		key, err := pkcs12.ParsePKCS8PrivateKey(blk.Bytes)
+		privks[i], err = pf(blk.Bytes)
 		if err != nil {
 			log.Errorf("NewFabricManager - failed to parse %s to private key: %v", file, err)
 			return nil, err
 		}
-		privks[i] = key.(*ecdsa.PrivateKey)
 	}
 
 	log.Infof("NewFabricManager - poly user address: %s", signer.Address.ToBase58())
@@ -205,18 +210,32 @@ func (e *FabricManager) HandleNewBlock(height uint64) bool {
 func (e *FabricManager) commitCrossChainEvent(height uint32, value []byte, txhash []byte) (string, error) {
 	log.Debugf("commit proof, height: %d, value: %s, txhash: %s", height, hex.EncodeToString(value), hex.EncodeToString(txhash))
 
-	hash := crypto.SHA256.New()
-	hash.Write(value)
-	digest := hash.Sum(nil)
 
 	sigs := make([][]byte, len(e.fabPrivks))
-	for i, k := range e.fabPrivks {
-		sig, err := k.Sign(rand.Reader, digest, nil)
-		if err != nil {
-			log.Errorf("No.%d failed to sign: %v", i, err)
-			return "", err
+	var digest []byte
+	if !e.config.FabricConfig.IsGM {
+		hash := crypto.SHA256.New()
+		hash.Write(value)
+		digest = hash.Sum(nil)
+		for i, k := range e.fabPrivks {
+			key := k.(*ecdsa.PrivateKey)
+			sig, err := key.Sign(rand.Reader, digest, nil)
+			if err != nil {
+				log.Errorf("No.%d failed to sign: %v", i, err)
+				return "", err
+			}
+			sigs[i] = sig
 		}
-		sigs[i] = sig
+	} else {
+		for i, k := range e.fabPrivks {
+			key := k.(*sm2.PrivateKey)
+			sig, err := key.Sign(rand.Reader, value, nil)
+			if err != nil {
+				log.Errorf("No.%d failed to sign: %v", i, err)
+				return "", err
+			}
+			sigs[i] = sig
+		}
 	}
 
 	sink := common.NewZeroCopySink(nil)
